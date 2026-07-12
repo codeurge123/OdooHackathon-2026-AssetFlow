@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fi'
 import { navItems } from '../data/assetFlowData'
 
+//  Updated upstream
 function AppShell({
   active,
   setActive,
@@ -85,11 +86,10 @@ function AppShell({
         <nav className="mt-4 grid gap-1">
           {navItems.map((item) => (
             <button
-              className={`rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
-                active === item
-                  ? 'bg-cyan-50 text-cyan-800 ring-1 ring-cyan-200'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
-              }`}
+              className={`rounded-md px-3 py-2 text-left text-sm font-semibold transition ${active === item
+                ? 'bg-cyan-50 text-cyan-800 ring-1 ring-cyan-200'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+                }`}
               key={item}
               onClick={() => setActive(item)}
               type="button"
@@ -131,11 +131,10 @@ function AppShell({
           </AnimatePresence>
 
           <button
-            className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left text-sm font-semibold transition ${
-              settingsOpen
-                ? 'bg-slate-100 text-slate-950'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
-            }`}
+            className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left text-sm font-semibold transition ${settingsOpen
+              ? 'bg-slate-100 text-slate-950'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+              }`}
             onClick={() => setSettingsOpen((current) => !current)}
             type="button"
           >
@@ -170,11 +169,10 @@ function AppShell({
           <nav className="flex gap-2 overflow-x-auto">
             {navItems.map((item) => (
               <button
-                className={`whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold transition ${
-                  active === item
-                    ? 'bg-cyan-50 text-cyan-800 ring-1 ring-cyan-200'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
-                }`}
+                className={`whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold transition ${active === item
+                  ? 'bg-cyan-50 text-cyan-800 ring-1 ring-cyan-200'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+                  }`}
                 key={item}
                 onClick={() => setActive(item)}
                 type="button"
