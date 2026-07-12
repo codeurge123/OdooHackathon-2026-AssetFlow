@@ -16,20 +16,27 @@ const request = async (path, options = {}) => {
   return data
 }
 
+const scopedPath = (path, user) => {
+  if (!user?.organization) return path
+  const separator = path.includes('?') ? '&' : '?'
+  return `${path}${separator}organization=${encodeURIComponent(user.organization)}`
+}
+
 export const api = {
   login: (payload) => request('/login', { method: 'POST', body: JSON.stringify(payload) }),
   createEmployeeAccount: (payload) => request('/employee/signup', { method: 'POST', body: JSON.stringify(payload) }),
-  getDashboard: () => request('/dashboard'),
-  getOrganization: () => request('/organization'),
-  getAssets: () => request('/assets'),
-  getBookings: () => request('/bookings'),
-  getMaintenance: () => request('/maintenance'),
-  getAudits: () => request('/audits'),
-  getReports: () => request('/reports'),
+  getDashboard: (user) => request(scopedPath('/dashboard', user)),
+  getOrganization: (user) => request(scopedPath('/organization', user)),
+  getAssets: (user) => request(scopedPath('/assets', user)),
+  getBookings: (user) => request(scopedPath('/bookings', user)),
+  getMaintenance: (user) => request(scopedPath('/maintenance', user)),
+  getAudits: (user) => request(scopedPath('/audits', user)),
+  getReports: (user) => request(scopedPath('/reports', user)),
   getNotifications: (audience = 'Admin', user) => {
     const params = new URLSearchParams({ audience })
     if (user?.email) params.set('recipientEmail', user.email)
     if (user?.name) params.set('recipientName', user.name)
+    if (user?.organization) params.set('organization', user.organization)
     return request(`/notifications?${params.toString()}`)
   },
 

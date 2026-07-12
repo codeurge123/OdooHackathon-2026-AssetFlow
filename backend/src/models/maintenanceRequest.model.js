@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const maintenanceRequestSchema = new mongoose.Schema(
   {
     assetTag: { type: String, required: true },
+    organization: { type: String, required: true, default: "AssetFlow Demo Org" },
     title: { type: String, required: true },
     description: { type: String },
     requestedBy: { type: String },

@@ -1,6 +1,7 @@
 import { Asset, AuditCycle, Booking, Employee, MaintenanceRequest } from "../models/index.js";
 import { listRecords } from "../services/dataSource.service.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { requestedOrganization, scopeRecords } from "../utils/organizationScope.js";
 
 const percent = (value, total) => (total ? Math.round((value / total) * 100) : 0);
 
@@ -13,13 +14,19 @@ const monthLabel = (value) => {
 const assetLabel = (asset) => `${asset.tag || "UNTAGGED"} ${asset.name || "Asset"}`;
 
 export const getReports = asyncHandler(async (req, res) => {
-  const [assets, bookings, maintenance, audits, employees] = await Promise.all([
+  const organization = requestedOrganization(req);
+  const [allAssets, allBookings, allMaintenance, allAudits, allEmployees] = await Promise.all([
     listRecords("assets", Asset),
     listRecords("bookings", Booking),
     listRecords("maintenanceRequests", MaintenanceRequest),
     listRecords("auditCycles", AuditCycle),
     listRecords("employees", Employee),
   ]);
+  const assets = scopeRecords(allAssets, organization);
+  const bookings = scopeRecords(allBookings, organization);
+  const maintenance = scopeRecords(allMaintenance, organization);
+  const audits = scopeRecords(allAudits, organization);
+  const employees = scopeRecords(allEmployees, organization);
 
   const totalAssets = assets.length;
   const availableAssets = assets.filter((asset) => asset.status === "Available").length;

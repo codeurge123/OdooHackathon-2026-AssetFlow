@@ -79,13 +79,13 @@ function App() {
     try {
       const audience = user?.role === 'Admin' ? 'Admin' : 'Employee'
       const [dashboard, organization, assets, bookings, maintenance, audits, reports, notifications] = await Promise.all([
-        api.getDashboard(),
-        api.getOrganization(),
-        api.getAssets(),
-        api.getBookings(),
-        api.getMaintenance(),
-        api.getAudits(),
-        api.getReports(),
+        api.getDashboard(user),
+        api.getOrganization(user),
+        api.getAssets(user),
+        api.getBookings(user),
+        api.getMaintenance(user),
+        api.getAudits(user),
+        api.getReports(user),
         api.getNotifications(audience, user),
       ])
       setData({ dashboard, organization, assets, bookings, maintenance, audits, reports, notifications })

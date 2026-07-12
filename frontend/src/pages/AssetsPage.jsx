@@ -31,6 +31,7 @@ function AssetsPage({ data, runAction, currentUser }) {
     runAction(async () => {
       await api.createAsset({
         ...form,
+        organization: currentUser?.organization,
         acquisitionCost: Number(form.acquisitionCost || 0),
         tag: `AF-${String(Date.now()).slice(-4)}`,
         sharedBookable: false,

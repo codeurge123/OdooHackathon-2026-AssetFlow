@@ -2,15 +2,17 @@ import { dashboard } from "../data/seedData.js";
 import { Asset, Booking, MaintenanceRequest } from "../models/index.js";
 import { hasMongoConnection, listRecords } from "../services/dataSource.service.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { requestedOrganization, scopeRecords } from "../utils/organizationScope.js";
 
 export const getHealth = (req, res) => {
   res.json({ status: "ok", database: hasMongoConnection() ? "mongodb-connected" : "seed-data" });
 };
 
 export const getDashboard = asyncHandler(async (req, res) => {
-  const assets = await listRecords("assets", Asset);
-  const bookings = await listRecords("bookings", Booking);
-  const maintenance = await listRecords("maintenanceRequests", MaintenanceRequest);
+  const organization = requestedOrganization(req);
+  const assets = scopeRecords(await listRecords("assets", Asset), organization);
+  const bookings = scopeRecords(await listRecords("bookings", Booking), organization);
+  const maintenance = scopeRecords(await listRecords("maintenanceRequests", MaintenanceRequest), organization);
 
   res.json({
     ...dashboard,
