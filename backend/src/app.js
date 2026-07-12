@@ -8,7 +8,6 @@ const app = express();
 const allowedOrigins = [
   "https://odoohackathon-2026-assetflow-1.onrender.com",
   "http://localhost:5173",
-  "http://127.0.0.1:5173",
   ...(process.env.CORS_ORIGIN || "")
     .split(",")
     .map((origin) => origin.trim())

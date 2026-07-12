@@ -156,7 +156,6 @@ function LoginPage({ onLogin, onCreateAccount, authError }) {
                 {mode === 'login' ? 'Create Account' : 'Back to Login'}
               </button>
             </p>
-            <p className="mt-4 text-xs text-slate-500">Default admin: admin@assetflow.com / Admin@123 for AssetFlow Demo Org.</p>
           </motion.form>
         </div>
       </motion.section>
