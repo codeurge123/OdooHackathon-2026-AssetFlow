@@ -30,16 +30,16 @@ export const categories = [
 ]
 
 export const employees = [
-  { name: 'Priya Shah', email: 'priya@assetflow.test', department: 'Engineering', role: 'Employee', status: 'Active' },
-  { name: 'Aditi Rao', email: 'aditi@assetflow.test', department: 'Engineering', role: 'Department Head', status: 'Active' },
-  { name: 'Rohan Mehta', email: 'rohan@assetflow.test', department: 'Facilities', role: 'Asset Manager', status: 'Active' },
+  { name: 'Priya Shah', email: 'priya@assetflow.test', organization: 'AssetFlow Demo Org', department: 'Engineering', role: 'Employee', status: 'Active' },
+  { name: 'Aditi Rao', email: 'aditi@assetflow.test', organization: 'AssetFlow Demo Org', department: 'Engineering', role: 'Department Head', status: 'Active' },
+  { name: 'Rohan Mehta', email: 'rohan@assetflow.test', organization: 'AssetFlow Demo Org', department: 'Facilities', role: 'Asset Manager', status: 'Active' },
 ]
 
 export const assets = [
-  { tag: 'AF-0114', name: 'Dell Laptop', category: 'Electronics', status: 'Allocated', holder: 'Priya Shah', location: 'Bengaluru', condition: 'Good' },
-  { tag: 'AF-0062', name: 'Projector', category: 'Electronics', status: 'Under Maintenance', holder: '-', location: 'HQ Floor 2', condition: 'Faulty bulb' },
-  { tag: 'AF-0201', name: 'Office Chair', category: 'Furniture', status: 'Available', holder: '-', location: 'Warehouse', condition: 'Good' },
-  { tag: 'AF-0301', name: 'Camera Kit', category: 'Electronics', status: 'Reserved', holder: 'Media Team', location: 'Studio', condition: 'Excellent' },
+  { tag: 'AF-0114', name: 'Dell Laptop', category: 'Electronics', status: 'Allocated', holder: 'Priya Shah', location: 'Bengaluru', condition: 'Good', acquisitionCost: 78000 },
+  { tag: 'AF-0062', name: 'Projector', category: 'Electronics', status: 'Under Maintenance', holder: '-', location: 'HQ Floor 2', condition: 'Faulty bulb', acquisitionCost: 54000 },
+  { tag: 'AF-0201', name: 'Office Chair', category: 'Furniture', status: 'Available', holder: '-', location: 'Warehouse', condition: 'Good', acquisitionCost: 8500 },
+  { tag: 'AF-0301', name: 'Camera Kit', category: 'Electronics', status: 'Reserved', holder: 'Media Team', location: 'Studio', condition: 'Excellent', acquisitionCost: 125000 },
 ]
 
 export const maintenanceColumns = [

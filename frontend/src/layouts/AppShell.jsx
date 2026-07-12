@@ -11,8 +11,6 @@ import {
   FiX,
 } from 'react-icons/fi'
 import { adminNavItems } from '../data/assetFlowData'
-
-//  Updated upstream
 function AppShell({
   active,
   setActive,
@@ -81,10 +79,10 @@ function AppShell({
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[250px] flex-col border-r border-slate-200 bg-white p-3 shadow-sm lg:flex">
-        <div className="border-b border-slate-200 px-3 py-4">
-          <h1 className="text-xl font-black text-slate-950">AssetFlow</h1>
+    <div className="min-h-screen bg-slate-100 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[250px] flex-col border-r border-slate-200 bg-white p-3 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900 lg:flex">
+        <div className="border-b border-slate-200 px-3 py-4 dark:border-slate-800">
+          <h1 className="text-xl font-black text-slate-950 dark:text-white">AssetFlow</h1>
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-cyan-700">
             Enterprise Asset & Resource ERP
           </p>
@@ -93,9 +91,9 @@ function AppShell({
         <nav className="mt-4 grid gap-1">
           {navItems.map((item) => (
             <button
-              className={`relative rounded-md px-3 py-2 text-left text-sm font-semibold transition ${active === item
-                ? 'bg-cyan-50 text-cyan-800 ring-1 ring-cyan-200'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+              className={`relative cursor-pointer rounded-md px-3 py-2 text-left text-sm font-semibold transition ${active === item
+                ? 'bg-cyan-50 text-cyan-800 ring-1 ring-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-200 dark:ring-cyan-900'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
                 }`}
               key={item}
               onClick={() => {
@@ -114,27 +112,18 @@ function AppShell({
           ))}
         </nav>
 
-        <div className="relative mt-auto border-t border-slate-200 pt-3">
+        <div className="relative mt-auto border-t border-slate-200 pt-3 dark:border-slate-800">
           <AnimatePresence>
             {settingsOpen && (
               <motion.div
-                className="absolute bottom-[58px] left-0 right-0 overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 shadow-xl"
+                className="absolute bottom-[58px] left-0 right-0 overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.16 }}
               >
                 <button
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-cyan-50 hover:text-cyan-800"
-                  onClick={onToggleTheme}
-                  type="button"
-                >
-                  {theme === 'dark' ? <FiSun className="h-4 w-4" /> : <FiMoon className="h-4 w-4" />}
-                  {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
-                </button>
-
-                <button
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-cyan-50 hover:text-cyan-800"
+                  className="flex cursor-pointer w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-cyan-50 hover:text-cyan-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-cyan-200"
                   onClick={openPasswordModal}
                   type="button"
                 >
@@ -143,7 +132,7 @@ function AppShell({
                 </button>
 
                 <button
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-semibold text-rose-700 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/30"
                   onClick={handleLogout}
                   type="button"
                 >
@@ -156,8 +145,8 @@ function AppShell({
 
           <button
             className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left text-sm font-semibold transition ${settingsOpen
-              ? 'bg-slate-100 text-slate-950'
-              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+              ? 'bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-white'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
               }`}
             onClick={() => setSettingsOpen((current) => !current)}
             type="button"
@@ -174,28 +163,38 @@ function AppShell({
       </aside>
 
       <div className="lg:ml-[250px]">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur transition-colors dark:border-slate-800 dark:bg-slate-900/90">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
             <div>
-              <h1 className="text-xl font-black text-slate-950">AssetFlow</h1>
+              <h1 className="text-xl font-black text-slate-950 dark:text-white">AssetFlow</h1>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-cyan-700">
                 Enterprise Asset & Resource ERP
               </p>
             </div>
 
-            <div className="hidden rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 sm:block">
-              {navItems.length === adminNavItems.length ? 'Admin workspace' : 'Employee workspace'}
+            <div className="flex items-center gap-3">
+              <button
+                className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800"
+                onClick={onToggleTheme}
+                title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+                type="button"
+              >
+                {theme === 'dark' ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
+              </button>
+              <div className="hidden rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200 sm:block">
+                {navItems.length === adminNavItems.length ? 'Admin workspace' : 'Employee workspace'}
+              </div>
             </div>
           </div>
         </header>
 
-        <div className="border-b border-slate-200 bg-white p-3 lg:hidden">
+        <div className="border-b border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 lg:hidden">
           <nav className="flex gap-2 overflow-x-auto">
             {navItems.map((item) => (
               <button
                 className={`relative whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold transition ${active === item
-                  ? 'bg-cyan-50 text-cyan-800 ring-1 ring-cyan-200'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+                  ? 'bg-cyan-50 text-cyan-800 ring-1 ring-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-200 dark:ring-cyan-900'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
                   }`}
                 key={item}
                 onClick={() => {

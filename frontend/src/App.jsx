@@ -47,6 +47,14 @@ const initialData = {
 
 const SESSION_KEY = 'assetflow-session'
 const THEME_KEY = 'assetflow-theme'
+const readKeyFor = (user) => `assetflow-read-notifications-${user?.email || user?.id || 'guest'}`
+const loadReadIds = (user) => {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(readKeyFor(user)) || '[]'))
+  } catch {
+    return new Set()
+  }
+}
 
 function App() {
   const savedUser = (() => {
@@ -62,7 +70,7 @@ function App() {
   const [error, setError] = useState('')
   const [authError, setAuthError] = useState('')
   const [currentUser, setCurrentUser] = useState(savedUser)
-  const [readNotificationIds, setReadNotificationIds] = useState(() => new Set())
+  const [readNotificationIds, setReadNotificationIds] = useState(() => loadReadIds(savedUser))
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || 'light')
   const ActiveScreen = currentUser?.role === 'Employee' ? employeeScreens[active] : screens[active]
 
@@ -88,6 +96,7 @@ function App() {
 
   const handleAuthenticated = async (user) => {
     setCurrentUser(user)
+    setReadNotificationIds(loadReadIds(user))
     localStorage.setItem(SESSION_KEY, JSON.stringify(user))
     setSignedIn(true)
     setActive(user.role === 'Admin' ? 'Dashboard' : 'Personal Dashboard')
@@ -151,7 +160,9 @@ function App() {
   const unreadCount = notificationIds.filter((id) => !readNotificationIds.has(id)).length
 
   const markNotificationsRead = () => {
-    setReadNotificationIds(new Set(notificationIds))
+    const next = new Set(notificationIds)
+    localStorage.setItem(readKeyFor(currentUser), JSON.stringify([...next]))
+    setReadNotificationIds(next)
   }
 
   const toggleTheme = () => {
@@ -163,7 +174,11 @@ function App() {
   }
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
+    const isDark = theme === 'dark'
+    document.documentElement.classList.toggle('dark', isDark)
+    document.body.classList.toggle('dark', isDark)
+    document.documentElement.dataset.theme = theme
+    document.documentElement.style.colorScheme = theme
   }, [theme])
 
   if (!signedIn) {
@@ -184,7 +199,7 @@ function App() {
         theme={theme}
       >
         {error && <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{error}</div>}
-        <ActiveScreen currentUser={currentUser} data={data} runAction={runAction} setActive={setActive} />
+        <ActiveScreen currentUser={currentUser} data={data} onMarkNotificationsRead={markNotificationsRead} runAction={runAction} setActive={setActive} />
       </AppShell>
     )
   }
@@ -194,7 +209,7 @@ function App() {
       logout()
     }} notificationCount={unreadCount} onNotificationsOpen={markNotificationsRead} onToggleTheme={toggleTheme} theme={theme}>
       {error && <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{error}</div>}
-      <ActiveScreen currentUser={currentUser} data={data} runAction={runAction} setActive={setActive} />
+      <ActiveScreen currentUser={currentUser} data={data} onMarkNotificationsRead={markNotificationsRead} runAction={runAction} setActive={setActive} />
     </AppShell>
   )
 }
