@@ -10,9 +10,24 @@ export const createAsset = asyncHandler(async (req, res) => {
   res.status(201).json(await createRecord("assets", Asset, req.body));
 });
 
+const notifyAssetHolder = async (asset, payload) => {
+  if (!payload.holder && !payload.holderEmail) return;
+  await createRecord("notifications", null, {
+    type: "Alerts",
+    audience: "Employee",
+    recipientEmail: payload.holderEmail,
+    recipientName: payload.holder,
+    text: `${asset.name} (${asset.tag}) was allocated/transferred to you`,
+    age: "just now",
+  });
+};
+
 export const updateAsset = asyncHandler(async (req, res) => {
   const updated = await updateRecord("assets", Asset, req.params.id, req.body);
   if (!updated) return res.status(404).json({ message: "Asset not found" });
+
+  if (req.body.holder || req.body.holderEmail) await notifyAssetHolder(updated, req.body);
+
   res.json(updated);
 });
 
@@ -35,5 +50,7 @@ export const allocateAsset = asyncHandler(async (req, res) => {
     });
   }
 
-  res.status(201).json(await updateRecord("assets", Asset, req.params.id, { holder: req.body.holder, status: "Allocated" }));
+  const updated = await updateRecord("assets", Asset, req.params.id, { holder: req.body.holder, holderEmail: req.body.holderEmail, status: "Allocated" });
+  await notifyAssetHolder(updated, req.body);
+  res.status(201).json(updated);
 });

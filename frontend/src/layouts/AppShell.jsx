@@ -4,11 +4,13 @@ import {
   FiChevronUp,
   FiLock,
   FiLogOut,
+  FiMoon,
   FiSave,
   FiSettings,
+  FiSun,
   FiX,
 } from 'react-icons/fi'
-import { navItems } from '../data/assetFlowData'
+import { adminNavItems } from '../data/assetFlowData'
 
 //  Updated upstream
 function AppShell({
@@ -17,6 +19,11 @@ function AppShell({
   children,
   onLogout,
   onChangePassword,
+  notificationCount = 0,
+  navItems = adminNavItems,
+  onNotificationsOpen,
+  theme = 'light',
+  onToggleTheme,
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
@@ -86,15 +93,23 @@ function AppShell({
         <nav className="mt-4 grid gap-1">
           {navItems.map((item) => (
             <button
-              className={`rounded-md px-3 py-2 text-left text-sm font-semibold transition ${active === item
+              className={`relative rounded-md px-3 py-2 text-left text-sm font-semibold transition ${active === item
                 ? 'bg-cyan-50 text-cyan-800 ring-1 ring-cyan-200'
                 : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
                 }`}
               key={item}
-              onClick={() => setActive(item)}
+              onClick={() => {
+                setActive(item)
+                if (item === 'Notifications') onNotificationsOpen?.()
+              }}
               type="button"
             >
               {item}
+              {item === 'Notifications' && notificationCount > 0 && (
+                <span className="absolute right-2 top-2 grid h-5 min-w-5 place-items-center rounded-full bg-rose-600 px-1 text-[10px] font-black text-white">
+                  {notificationCount}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -109,6 +124,15 @@ function AppShell({
                 exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.16 }}
               >
+                <button
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-cyan-50 hover:text-cyan-800"
+                  onClick={onToggleTheme}
+                  type="button"
+                >
+                  {theme === 'dark' ? <FiSun className="h-4 w-4" /> : <FiMoon className="h-4 w-4" />}
+                  {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
+                </button>
+
                 <button
                   className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-cyan-50 hover:text-cyan-800"
                   onClick={openPasswordModal}
@@ -160,7 +184,7 @@ function AppShell({
             </div>
 
             <div className="hidden rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 sm:block">
-              Admin workspace
+              {navItems.length === adminNavItems.length ? 'Admin workspace' : 'Employee workspace'}
             </div>
           </div>
         </header>
@@ -169,15 +193,23 @@ function AppShell({
           <nav className="flex gap-2 overflow-x-auto">
             {navItems.map((item) => (
               <button
-                className={`whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold transition ${active === item
+                className={`relative whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold transition ${active === item
                   ? 'bg-cyan-50 text-cyan-800 ring-1 ring-cyan-200'
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
                   }`}
                 key={item}
-                onClick={() => setActive(item)}
+                onClick={() => {
+                  setActive(item)
+                  if (item === 'Notifications') onNotificationsOpen?.()
+                }}
                 type="button"
               >
                 {item}
+                {item === 'Notifications' && notificationCount > 0 && (
+                  <span className="ml-2 inline-grid h-5 min-w-5 place-items-center rounded-full bg-rose-600 px-1 text-[10px] font-black text-white">
+                    {notificationCount}
+                  </span>
+                )}
               </button>
             ))}
           </nav>

@@ -4,7 +4,16 @@ import asyncHandler from "../utils/asyncHandler.js";
 export const getNotifications = asyncHandler(async (req, res) => {
   const notifications = await listRecords("notifications", null);
   const audience = req.query.audience;
-  res.json(audience ? notifications.filter((item) => !item.audience || item.audience === audience) : notifications);
+  const recipientEmail = req.query.recipientEmail;
+  const recipientName = req.query.recipientName;
+  const filtered = notifications.filter((item) => {
+    if (audience && item.audience && item.audience !== audience) return false;
+    if (audience === "Employee") {
+      return item.recipientEmail === recipientEmail || item.recipientName === recipientName;
+    }
+    return true;
+  });
+  res.json(filtered);
 });
 
 export const createNotification = asyncHandler(async (req, res) => {

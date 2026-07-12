@@ -26,7 +26,12 @@ export const api = {
   getMaintenance: () => request('/maintenance'),
   getAudits: () => request('/audits'),
   getReports: () => request('/reports'),
-  getNotifications: (audience = 'Admin') => request(`/notifications?audience=${encodeURIComponent(audience)}`),
+  getNotifications: (audience = 'Admin', user) => {
+    const params = new URLSearchParams({ audience })
+    if (user?.email) params.set('recipientEmail', user.email)
+    if (user?.name) params.set('recipientName', user.name)
+    return request(`/notifications?${params.toString()}`)
+  },
 
   createDepartment: (payload) => request('/departments', { method: 'POST', body: JSON.stringify(payload) }),
   deleteDepartment: (id) => request(`/departments/${id}`, { method: 'DELETE' }),
@@ -42,6 +47,7 @@ export const api = {
   allocateAsset: (id, payload) => request(`/assets/${id}/allocate`, { method: 'POST', body: JSON.stringify(payload) }),
 
   createBooking: (payload) => request('/bookings', { method: 'POST', body: JSON.stringify(payload) }),
+  updateBooking: (id, payload) => request(`/bookings/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
   deleteBooking: (id) => request(`/bookings/${id}`, { method: 'DELETE' }),
 
   createMaintenance: (payload) => request('/maintenance', { method: 'POST', body: JSON.stringify(payload) }),

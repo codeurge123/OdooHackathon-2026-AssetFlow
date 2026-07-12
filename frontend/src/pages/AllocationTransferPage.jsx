@@ -7,12 +7,13 @@ function AllocationTransferPage({ data, runAction }) {
   const assets = data.assets || []
   const employees = data.organization?.employees || []
   const [assetId, setAssetId] = useState('')
-  const [holder, setHolder] = useState('')
+  const [employeeId, setEmployeeId] = useState('')
   const selectedAsset = assets.find((asset) => (asset.id || asset.tag) === assetId)
+  const selectedEmployee = employees.find((employee) => (employee.id || employee.email) === employeeId)
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    runAction(() => api.allocateAsset(assetId, { holder }))
+    runAction(() => api.allocateAsset(assetId, { holder: selectedEmployee.name, holderEmail: selectedEmployee.email }))
   }
 
   return (
@@ -28,9 +29,9 @@ function AllocationTransferPage({ data, runAction }) {
           </label>
           <label className="block text-sm font-semibold text-slate-700">
             To
-            <select className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm" required value={holder} onChange={(event) => setHolder(event.target.value)}>
+            <select className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-sm" required value={employeeId} onChange={(event) => setEmployeeId(event.target.value)}>
               <option value="">Select employee...</option>
-              {employees.map((employee) => <option key={employee.id || employee.email}>{employee.name}</option>)}
+              {employees.map((employee) => <option key={employee.id || employee.email} value={employee.id || employee.email}>{employee.name}</option>)}
             </select>
           </label>
         </div>
