@@ -11,9 +11,9 @@ export const categories = [
 ];
 
 export const employees = [
-  { name: "Priya Shah", email: "priya@assetflow.test", password: "Employee@123", department: "Engineering", role: "Employee", status: "Active" },
-  { name: "Aditi Rao", email: "aditi@assetflow.test", department: "Engineering", role: "Department Head", status: "Active" },
-  { name: "Rohan Mehta", email: "rohan@assetflow.test", department: "Facilities", role: "Asset Manager", status: "Active" },
+  { name: "Priya Shah", email: "priya@assetflow.test", password: "Employee@123", organization: "AssetFlow Demo Org", department: "Engineering", role: "Employee", status: "Active" },
+  { name: "Aditi Rao", email: "aditi@assetflow.test", organization: "AssetFlow Demo Org", department: "Engineering", role: "Department Head", status: "Active" },
+  { name: "Rohan Mehta", email: "rohan@assetflow.test", organization: "AssetFlow Demo Org", department: "Facilities", role: "Asset Manager", status: "Active" },
 ];
 
 export const assets = [
@@ -25,6 +25,8 @@ export const assets = [
     holder: "Priya Shah",
     location: "Bengaluru",
     condition: "Good",
+    acquisitionCost: 78000,
+    acquisitionDate: "2026-04-12T00:00:00.000Z",
     sharedBookable: false,
   },
   {
@@ -35,6 +37,8 @@ export const assets = [
     holder: null,
     location: "HQ Floor 2",
     condition: "Faulty bulb",
+    acquisitionCost: 54000,
+    acquisitionDate: "2026-05-08T00:00:00.000Z",
     sharedBookable: true,
   },
   {
@@ -45,6 +49,8 @@ export const assets = [
     holder: null,
     location: "Warehouse",
     condition: "Good",
+    acquisitionCost: 8500,
+    acquisitionDate: "2026-06-14T00:00:00.000Z",
     sharedBookable: false,
   },
   {
@@ -55,6 +61,8 @@ export const assets = [
     holder: "Media Team",
     location: "Studio",
     condition: "Excellent",
+    acquisitionCost: 125000,
+    acquisitionDate: "2026-07-02T00:00:00.000Z",
     sharedBookable: true,
   },
 ];

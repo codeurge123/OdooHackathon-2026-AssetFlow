@@ -55,6 +55,7 @@ export const api = {
   deleteMaintenance: (id) => request(`/maintenance/${id}`, { method: 'DELETE' }),
 
   createAudit: (payload) => request('/audits', { method: 'POST', body: JSON.stringify(payload) }),
+  updateAudit: (id, payload) => request(`/audits/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
   deleteAudit: (id) => request(`/audits/${id}`, { method: 'DELETE' }),
 
   createNotification: (payload) => request('/notifications', { method: 'POST', body: JSON.stringify(payload) }),

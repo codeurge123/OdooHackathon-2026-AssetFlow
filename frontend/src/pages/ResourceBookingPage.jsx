@@ -34,13 +34,15 @@ function ResourceBookingPage({ data, runAction, currentUser, readOnly = false })
 
   return (
     <Panel title={currentUser?.role === 'Employee' ? 'Request Resource' : 'Resource Booking'}>
-      <form className="mb-5 grid gap-3 lg:grid-cols-[1fr_1fr_210px_210px_130px]" onSubmit={handleSubmit}>
-        <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" placeholder="Resource" required value={form.resource} onChange={(event) => updateForm('resource', event.target.value)} />
-        <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" disabled={Boolean(currentUser)} placeholder="Booked by" required value={currentUser?.name || form.bookedBy} onChange={(event) => updateForm('bookedBy', event.target.value)} />
-        <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" type="datetime-local" required value={form.start} onChange={(event) => updateForm('start', event.target.value)} />
-        <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" type="datetime-local" required value={form.end} onChange={(event) => updateForm('end', event.target.value)} />
-        <button className="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-bold text-white">{currentUser?.role === 'Employee' ? 'Request Slot' : 'Book Slot'}</button>
-      </form>
+      {currentUser?.role === 'Employee' && (
+        <form className="mb-5 grid gap-3 lg:grid-cols-[1fr_1fr_210px_210px_130px]" onSubmit={handleSubmit}>
+          <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" placeholder="Resource" required value={form.resource} onChange={(event) => updateForm('resource', event.target.value)} />
+          <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" disabled={Boolean(currentUser)} placeholder="Booked by" required value={currentUser?.name || form.bookedBy} onChange={(event) => updateForm('bookedBy', event.target.value)} />
+          <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" type="datetime-local" required value={form.start} onChange={(event) => updateForm('start', event.target.value)} />
+          <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" type="datetime-local" required value={form.end} onChange={(event) => updateForm('end', event.target.value)} />
+          <button className="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-bold text-white">Request Slot</button>
+        </form>
+      )}
 
       <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
         {bookings.map((booking) => (

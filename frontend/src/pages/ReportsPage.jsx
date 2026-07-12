@@ -1,23 +1,19 @@
 import * as XLSX from 'xlsx'
-import {
-  FiActivity,
-  FiArchive,
-  FiBarChart2,
-  FiDownload,
-  FiFileText,
-  FiTool,
-} from 'react-icons/fi'
+import { FiActivity, FiArchive, FiBarChart2, FiDownload, FiFileText, FiTool } from 'react-icons/fi'
 import Panel from '../components/Panel'
 
-const formatValue = (value) => {
-  if (value === undefined || value === null || value === '') return '—'
-  if (typeof value === 'number') return `$${value.toLocaleString()}`
-  return value
+const money = (value) => {
+  const amount = Number(value || 0)
+  return amount ? amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }) : '—'
 }
 
-function ReportsPage({ data }) {
-  const reports = data.reports || {}
+const percent = (value) => `${Number(value || 0)}%`
 
+const itemName = (item) => (typeof item === 'string' ? item : item.name)
+
+function ReportsPage({ data, currentUser }) {
+  const reports = data.reports || {}
+  const isAdmin = currentUser?.role === 'Admin'
   const mostUsedAssets = reports.mostUsedAssets || []
   const idleAssets = reports.idleAssets || []
   const dueForMaintenance = reports.dueForMaintenance || []
@@ -25,417 +21,172 @@ function ReportsPage({ data }) {
   const monthlyPurchases = reports.monthlyPurchases || []
   const categoryData = reports.assetsByCategory || []
   const recentReports = reports.recentReports || []
-
-  const averageUtilization = utilization.length
-    ? Math.round(
-        utilization.reduce(
-          (total, item) => total + Number(item.utilization || 0),
-          0
-        ) / utilization.length
-      )
-    : 0
-
-  const totalAssets =
-    reports.totalAssets ||
-    categoryData.reduce((total, item) => total + Number(item.count || 0), 0)
-
-  const maxPurchaseValue = Math.max(
-    ...monthlyPurchases.map((item) => Number(item.value || 0)),
-    1
-  )
+  const totalAssets = Number(reports.totalAssets || 0)
+  const utilizationRate = Number(reports.utilizationRate || 0)
+  const globalEfficiency = Number(reports.globalEfficiency || 0)
+  const maxPurchaseValue = Math.max(...monthlyPurchases.map((item) => Number(item.value || 0)), 1)
+  const maxCategoryValue = Math.max(...categoryData.map((item) => Number(item.value || 0)), 1)
 
   const exportReport = () => {
     const workbook = XLSX.utils.book_new()
-
     const summarySheet = XLSX.utils.json_to_sheet([
       {
-        'Total Asset Value': reports.totalAssetValue || 'Not available',
-        'Total Assets': totalAssets || 'Not available',
-        'Average Utilization': `${averageUtilization}%`,
-        'Assets Due for Maintenance': dueForMaintenance.length,
-        'Most Used Assets': mostUsedAssets.length,
-        'Idle Assets': idleAssets.length,
+        'Total Assets': totalAssets,
+        'Total Asset Value': isAdmin ? reports.totalAssetValue || 0 : 'Admin only',
+        'Utilization Rate': percent(reports.utilizationRate),
+        'Availability Rate': percent(reports.availabilityRate),
+        'Maintenance Health': percent(reports.maintenanceHealth),
+        'Global Efficiency': percent(reports.globalEfficiency),
       },
     ])
 
-    const utilizationSheet = XLSX.utils.json_to_sheet(
-      utilization.length
-        ? utilization.map((item) => ({
-            Department: item.department || 'Unknown',
-            Utilization: `${item.utilization || 0}%`,
-          }))
-        : [{ Department: 'No utilization data available', Utilization: '' }]
-    )
-
-    const purchasesSheet = XLSX.utils.json_to_sheet(
-      monthlyPurchases.length
-        ? monthlyPurchases.map((item) => ({
-            Month: item.month || 'Unknown',
-            Value: item.value || 0,
-          }))
-        : [{ Month: 'No monthly purchase data available', Value: '' }]
-    )
-
-    const categoriesSheet = XLSX.utils.json_to_sheet(
-      categoryData.length
-        ? categoryData.map((item) => ({
-            Category: item.category || 'Unknown',
-            Assets: item.count || 0,
-          }))
-        : [{ Category: 'No category data available', Assets: '' }]
-    )
-
-    const assetStatusSheet = XLSX.utils.json_to_sheet([
-      ...mostUsedAssets.map((asset) => ({
-        Category: 'Most Used Asset',
-        Asset: asset,
-      })),
-      ...idleAssets.map((asset) => ({
-        Category: 'Idle Asset',
-        Asset: asset,
-      })),
-      ...dueForMaintenance.map((asset) => ({
-        Category: 'Due for Maintenance',
-        Asset: asset,
-      })),
+    const assetSheet = XLSX.utils.json_to_sheet([
+      ...mostUsedAssets.map((asset) => ({ Type: 'Most Used', Asset: itemName(asset), Uses: asset.uses || '' })),
+      ...idleAssets.map((asset) => ({ Type: 'Idle', Asset: itemName(asset), Location: asset.location || '', Value: isAdmin ? asset.value || 0 : 'Admin only' })),
+      ...dueForMaintenance.map((asset) => ({ Type: 'Maintenance', Asset: itemName(asset), Status: asset.status || '' })),
     ])
 
-    const recentReportsSheet = XLSX.utils.json_to_sheet(
-      recentReports.length
-        ? recentReports.map((report) => ({
-            'Report Name': report.name || 'Unnamed Report',
-            'Generated By': report.generatedBy || 'System',
-            Date: report.date || 'Not available',
-            Status: report.status || 'Verified',
-            Format: report.format || 'PDF / CSV',
-          }))
-        : [{ 'Report Name': 'No recent reports available' }]
-    )
-
-    summarySheet['!cols'] = [
-      { wch: 25 },
-      { wch: 20 },
-      { wch: 24 },
-      { wch: 30 },
-      { wch: 22 },
-      { wch: 18 },
-    ]
-
-    utilizationSheet['!cols'] = [{ wch: 28 }, { wch: 18 }]
-    purchasesSheet['!cols'] = [{ wch: 18 }, { wch: 18 }]
-    categoriesSheet['!cols'] = [{ wch: 28 }, { wch: 16 }]
-    assetStatusSheet['!cols'] = [{ wch: 26 }, { wch: 40 }]
-    recentReportsSheet['!cols'] = [
-      { wch: 32 },
-      { wch: 22 },
-      { wch: 18 },
-      { wch: 16 },
-      { wch: 16 },
-    ]
-
     XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary')
-    XLSX.utils.book_append_sheet(workbook, utilizationSheet, 'Utilization')
-    XLSX.utils.book_append_sheet(workbook, purchasesSheet, 'Purchases')
-    XLSX.utils.book_append_sheet(workbook, categoriesSheet, 'Categories')
-    XLSX.utils.book_append_sheet(workbook, assetStatusSheet, 'Asset Status')
-    XLSX.utils.book_append_sheet(workbook, recentReportsSheet, 'Recent Reports')
-
-    const date = new Date().toISOString().slice(0, 10)
-
-    XLSX.writeFile(workbook, `AssetFlow-Report-${date}.xlsx`)
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(utilization), 'Utilization')
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(categoryData), 'Categories')
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(monthlyPurchases), 'Purchases')
+    XLSX.utils.book_append_sheet(workbook, assetSheet, 'Asset Lists')
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(recentReports), 'Audit Reports')
+    XLSX.writeFile(workbook, `AssetFlow-Report-${new Date().toISOString().slice(0, 10)}.xlsx`)
   }
+
+  const metricCards = [
+    {
+      label: 'Total Asset Value',
+      value: isAdmin ? money(reports.totalAssetValue) : 'Admin only',
+      helper: `${totalAssets} assets`,
+      icon: FiArchive,
+      bar: totalAssets ? 82 : 0,
+      color: 'bg-blue-100 text-[#1454ad]',
+    },
+    {
+      label: 'Utilization Rate',
+      value: percent(utilizationRate),
+      helper: `${reports.allocatedAssets || 0} allocated, ${reports.reservedAssets || 0} reserved`,
+      icon: FiActivity,
+      bar: utilizationRate,
+      color: 'bg-amber-100 text-amber-700',
+    },
+    {
+      label: 'Maintenance Health',
+      value: percent(reports.maintenanceHealth),
+      helper: `${reports.underMaintenanceAssets || 0} under maintenance`,
+      icon: FiTool,
+      bar: reports.maintenanceHealth || 0,
+      color: 'bg-rose-100 text-rose-700',
+    },
+    {
+      label: 'Global Efficiency',
+      value: percent(globalEfficiency),
+      helper: 'Utilization + health + booking performance',
+      icon: FiBarChart2,
+      bar: globalEfficiency,
+      color: 'bg-cyan-100 text-cyan-700',
+    },
+  ]
 
   return (
     <Panel title="Reports & Analytics">
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 dark:border-slate-800 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-950">
-              Reports & Analytics
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Track asset performance, utilization, and maintenance activity.
-            </p>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">Reports & Analytics</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Calculated from live assets, bookings, maintenance requests, and audit cycles.</p>
           </div>
-
-          <button
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-            onClick={exportReport}
-            type="button"
-          >
+          <button className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-800" onClick={exportReport} type="button">
             <FiDownload className="h-4 w-4" />
             Export Excel Report
           </button>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div className="grid h-9 w-9 place-items-center rounded-md bg-blue-100 text-[#1454ad]">
-                <FiArchive className="h-5 w-5" />
+          {metricCards.map(({ label, value, helper, icon: Icon, bar, color }) => (
+            <section className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950" key={label}>
+              <div className="flex items-start justify-between">
+                <div className={`grid h-9 w-9 place-items-center rounded-md ${color}`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{helper}</span>
               </div>
-              <span className="text-xs font-bold text-blue-600">
-                {totalAssets ? `${totalAssets} assets` : 'No data'}
-              </span>
-            </div>
-
-            <p className="mt-4 text-xs font-semibold text-slate-500">
-              Total Asset Value
-            </p>
-            <p className="mt-1 text-2xl font-black text-slate-950">
-              {formatValue(reports.totalAssetValue)}
-            </p>
-
-            <div className="mt-3 h-1 w-full bg-blue-100">
-              <div className="h-full w-3/4 bg-[#1454ad]" />
-            </div>
-          </div>
-
-          <div className="border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div className="grid h-9 w-9 place-items-center rounded-md bg-amber-100 text-amber-700">
-                <FiActivity className="h-5 w-5" />
+              <p className="mt-4 text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</p>
+              <p className="mt-1 text-2xl font-black text-slate-950 dark:text-white">{value}</p>
+              <div className="mt-3 h-1 w-full bg-slate-200 dark:bg-slate-800">
+                <div className="h-full bg-[#1454ad]" style={{ width: `${Math.min(Number(bar || 0), 100)}%` }} />
               </div>
-              <span className="text-xs font-bold text-slate-500">
-                {utilization.length} departments
-              </span>
-            </div>
-
-            <p className="mt-4 text-xs font-semibold text-slate-500">
-              Utilization Rate
-            </p>
-            <p className="mt-1 text-2xl font-black text-slate-950">
-              {averageUtilization}%
-            </p>
-
-            <div className="mt-3 h-1 w-full bg-slate-200">
-              <div
-                className="h-full bg-amber-500"
-                style={{ width: `${Math.min(averageUtilization, 100)}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div className="grid h-9 w-9 place-items-center rounded-md bg-rose-100 text-rose-700">
-                <FiTool className="h-5 w-5" />
-              </div>
-              <span className="text-xs font-bold text-rose-600">
-                {dueForMaintenance.length} due
-              </span>
-            </div>
-
-            <p className="mt-4 text-xs font-semibold text-slate-500">
-              Maintenance Requests
-            </p>
-            <p className="mt-1 text-2xl font-black text-slate-950">
-              {dueForMaintenance.length}
-            </p>
-
-            <div className="mt-3 h-1 w-full bg-rose-100">
-              <div className="h-full w-1/2 bg-rose-600" />
-            </div>
-          </div>
-
-          <div className="bg-[#1454ad] p-4 text-white shadow-sm">
-            <div className="flex items-start justify-between">
-              <div className="grid h-9 w-9 place-items-center rounded-md bg-white/15">
-                <FiBarChart2 className="h-5 w-5" />
-              </div>
-              <span className="text-xs font-bold text-blue-100">ASSETFLOW</span>
-            </div>
-
-            <p className="mt-4 text-xs font-semibold text-blue-100">
-              Global Efficiency
-            </p>
-            <p className="mt-1 text-2xl font-black">
-              {averageUtilization ? `${averageUtilization}%` : '—'}
-            </p>
-            <p className="mt-2 text-xs leading-5 text-blue-100">
-              Based on department utilization and asset activity.
-            </p>
-          </div>
+            </section>
+          ))}
         </div>
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]">
-          <section className="min-h-[290px] border border-slate-200 bg-white p-5 shadow-sm">
+          <section className="min-h-[290px] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="font-bold text-slate-900">
-                  Monthly Asset Purchases
-                </h3>
-                <p className="mt-1 text-xs text-slate-500">
-                  Procurement volume across recent months.
-                </p>
+                <h3 className="font-bold text-slate-900 dark:text-white">Monthly Asset Purchases</h3>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Asset value grouped by acquisition month.</p>
               </div>
-
-              <span className="rounded-md bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#1454ad]">
-                Volume
-              </span>
+              <span className="rounded-md bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#1454ad] dark:bg-blue-950 dark:text-blue-200">Value</span>
             </div>
-
-            <div className="mt-8 flex h-44 items-end gap-3 border-b border-slate-200 pb-2">
-              {monthlyPurchases.length ? (
-                monthlyPurchases.map((item) => (
-                  <div
-                    className="flex h-full flex-1 flex-col justify-end gap-2"
-                    key={item.month}
-                  >
-                    <div
-                      className="min-h-1 w-full bg-[#1454ad] transition hover:bg-blue-700"
-                      style={{
-                        height: `${Math.max(
-                          6,
-                          (Number(item.value || 0) / maxPurchaseValue) * 100
-                        )}%`,
-                      }}
-                      title={`${item.month}: ${item.value}`}
-                    />
-
-                    <span className="text-center text-[10px] font-medium text-slate-500">
-                      {item.month}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="grid h-full w-full place-items-center text-sm text-slate-400">
-                  No monthly purchase data available.
+            <div className="mt-8 flex h-44 items-end gap-3 border-b border-slate-200 pb-2 dark:border-slate-800">
+              {monthlyPurchases.length ? monthlyPurchases.map((item) => (
+                <div className="flex h-full flex-1 flex-col justify-end gap-2" key={item.month}>
+                  <div className="min-h-1 w-full bg-[#1454ad] transition hover:bg-blue-700" style={{ height: `${Math.max(6, (Number(item.value || 0) / maxPurchaseValue) * 100)}%` }} title={`${item.month}: ${money(item.value)}`} />
+                  <span className="text-center text-[10px] font-medium text-slate-500 dark:text-slate-400">{item.month}</span>
                 </div>
+              )) : (
+                <div className="grid h-full w-full place-items-center text-sm text-slate-400">No asset purchase data yet.</div>
               )}
             </div>
           </section>
 
-          <section className="border border-slate-200 bg-white p-5 shadow-sm">
-            <div>
-              <h3 className="font-bold text-slate-900">Assets by Category</h3>
-              <p className="mt-1 text-xs text-slate-500">
-                Inventory distribution by type.
-              </p>
-            </div>
-
-            <div className="mt-6 flex flex-col items-center gap-6 sm:flex-row xl:flex-col">
-              <div
-                className="grid h-36 w-36 shrink-0 place-items-center rounded-full"
-                style={{
-                  background:
-                    'conic-gradient(#1454ad 0deg 150deg, #64748b 150deg 245deg, #b45309 245deg 320deg, #cbd5e1 320deg 360deg)',
-                }}
-              >
-                <div className="grid h-24 w-24 place-items-center rounded-full bg-white text-center">
-                  <div>
-                    <p className="text-2xl font-black text-slate-900">
-                      {totalAssets || '—'}
-                    </p>
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                      Total Assets
-                    </p>
+          <section className="border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            <h3 className="font-bold text-slate-900 dark:text-white">Assets by Category</h3>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Inventory count and value by type.</p>
+            <div className="mt-6 space-y-4">
+              {categoryData.length ? categoryData.map((item) => (
+                <div key={item.category}>
+                  <div className="mb-1 flex items-center justify-between gap-3 text-xs">
+                    <span className="font-bold text-slate-700 dark:text-slate-200">{item.category}</span>
+                    <span className="text-slate-500 dark:text-slate-400">{item.count} assets{isAdmin ? ` · ${money(item.value)}` : ''}</span>
+                  </div>
+                  <div className="h-2 bg-slate-100 dark:bg-slate-800">
+                    <div className="h-full bg-[#1454ad]" style={{ width: `${Math.max(8, (Number(item.value || item.count || 0) / maxCategoryValue) * 100)}%` }} />
                   </div>
                 </div>
-              </div>
-
-              <div className="w-full space-y-2">
-                {categoryData.length ? (
-                  categoryData.map((item, index) => {
-                    const colors = [
-                      'bg-[#1454ad]',
-                      'bg-slate-500',
-                      'bg-amber-700',
-                      'bg-slate-300',
-                    ]
-
-                    return (
-                      <div
-                        className="flex items-center justify-between gap-3 text-xs"
-                        key={item.category}
-                      >
-                        <span className="flex items-center gap-2 text-slate-600">
-                          <span
-                            className={`h-2.5 w-2.5 rounded-full ${
-                              colors[index % colors.length]
-                            }`}
-                          />
-                          {item.category}
-                        </span>
-
-                        <span className="font-bold text-slate-800">
-                          {item.count}
-                        </span>
-                      </div>
-                    )
-                  })
-                ) : (
-                  <p className="text-sm text-slate-400">
-                    No category data available.
-                  </p>
-                )}
-              </div>
+              )) : (
+                <p className="text-sm text-slate-400">No category data available.</p>
+              )}
             </div>
           </section>
         </div>
 
-        <section className="overflow-hidden border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4">
-            <div>
-              <h3 className="font-bold text-slate-900">Recent Reports</h3>
-              <p className="mt-1 text-xs text-slate-500">
-                System-generated audit and reconciliation reports.
-              </p>
-            </div>
-
-            <button
-              className="text-xs font-bold text-[#1454ad] hover:text-blue-800"
-              type="button"
-            >
-              View All Archives
-            </button>
+        <section className="overflow-hidden border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+            <h3 className="font-bold text-slate-900 dark:text-white">Audit Report Archive</h3>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Generated from active audit cycles.</p>
           </div>
-
           <div className="overflow-x-auto">
-            <table className="min-w-[680px] w-full text-left">
-              <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+            <table className="w-full min-w-[680px] text-left">
+              <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:bg-slate-900 dark:text-slate-400">
                 <tr>
-                  <th className="px-5 py-3">Report Name</th>
-                  <th className="px-5 py-3">Generated By</th>
-                  <th className="px-5 py-3">Date</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3">Format</th>
+                  {['Report Name', 'Generated By', 'Date', 'Status', 'Format'].map((heading) => <th className="px-5 py-3" key={heading}>{heading}</th>)}
                 </tr>
               </thead>
-
-              <tbody className="divide-y divide-slate-100 text-sm">
-                {recentReports.length ? (
-                  recentReports.map((report) => (
-                    <tr key={report.id || report.name}>
-                      <td className="px-5 py-4 font-semibold text-slate-800">
-                        <span className="flex items-center gap-2">
-                          <FiFileText className="text-rose-500" />
-                          {report.name}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-slate-600">
-                        {report.generatedBy}
-                      </td>
-                      <td className="px-5 py-4 text-slate-600">{report.date}</td>
-                      <td className="px-5 py-4">
-                        <span className="rounded bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase text-emerald-700">
-                          {report.status || 'Verified'}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-slate-600">
-                        {report.format || 'PDF / CSV'}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      className="px-5 py-8 text-center text-sm text-slate-400"
-                      colSpan="5"
-                    >
-                      No recent reports available.
-                    </td>
+              <tbody className="divide-y divide-slate-100 text-sm dark:divide-slate-800">
+                {recentReports.length ? recentReports.map((report) => (
+                  <tr key={report.id || report.name}>
+                    <td className="px-5 py-4 font-semibold text-slate-800 dark:text-slate-100"><span className="flex items-center gap-2"><FiFileText className="text-rose-500" />{report.name}</span></td>
+                    <td className="px-5 py-4 text-slate-600 dark:text-slate-300">{report.generatedBy}</td>
+                    <td className="px-5 py-4 text-slate-600 dark:text-slate-300">{report.date}</td>
+                    <td className="px-5 py-4"><span className="rounded bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200">{report.status}</span></td>
+                    <td className="px-5 py-4 text-slate-600 dark:text-slate-300">{report.format}</td>
                   </tr>
+                )) : (
+                  <tr><td className="px-5 py-8 text-center text-sm text-slate-400" colSpan="5">No audit reports available.</td></tr>
                 )}
               </tbody>
             </table>
@@ -444,42 +195,19 @@ function ReportsPage({ data }) {
 
         <div className="grid gap-5 lg:grid-cols-3">
           {[
-            {
-              title: 'Most Used Assets',
-              assets: mostUsedAssets,
-              color: 'border-blue-500',
-            },
-            {
-              title: 'Idle Assets',
-              assets: idleAssets,
-              color: 'border-amber-500',
-            },
-            {
-              title: 'Due for Maintenance',
-              assets: dueForMaintenance,
-              color: 'border-rose-500',
-            },
+            { title: 'Most Used Assets', assets: mostUsedAssets, color: 'border-blue-500', render: (asset) => `${itemName(asset)}${asset.uses ? ` · ${asset.uses} use${asset.uses === 1 ? '' : 's'}` : ''}` },
+            { title: 'Idle Assets', assets: idleAssets, color: 'border-amber-500', render: (asset) => `${itemName(asset)}${isAdmin && asset.value ? ` · ${money(asset.value)}` : ''}` },
+            { title: 'Due for Maintenance', assets: dueForMaintenance, color: 'border-rose-500', render: (asset) => `${itemName(asset)}${asset.status ? ` · ${asset.status}` : ''}` },
           ].map((section) => (
-            <section
-              className={`border border-slate-200 border-t-[3px] bg-white p-5 shadow-sm ${section.color}`}
-              key={section.title}
-            >
-              <h3 className="font-bold text-slate-900">{section.title}</h3>
-
+            <section className={`border border-slate-200 border-t-[3px] bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 ${section.color}`} key={section.title}>
+              <h3 className="font-bold text-slate-900 dark:text-white">{section.title}</h3>
               <div className="mt-4 space-y-2">
-                {section.assets.length ? (
-                  section.assets.map((asset) => (
-                    <p
-                      className="border-b border-slate-100 pb-2 text-sm text-slate-600 last:border-0"
-                      key={asset}
-                    >
-                      {asset}
-                    </p>
-                  ))
-                ) : (
-                  <p className="text-sm text-slate-400">
-                    No assets to display.
+                {section.assets.length ? section.assets.map((asset) => (
+                  <p className="border-b border-slate-100 pb-2 text-sm text-slate-600 last:border-0 dark:border-slate-800 dark:text-slate-300" key={itemName(asset)}>
+                    {section.render(asset)}
                   </p>
+                )) : (
+                  <p className="text-sm text-slate-400">No assets to display.</p>
                 )}
               </div>
             </section>

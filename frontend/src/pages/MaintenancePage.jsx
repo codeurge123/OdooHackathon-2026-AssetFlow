@@ -103,7 +103,7 @@ function MaintenancePage({ data, runAction, currentUser }) {
         )}
 
         <div className="overflow-x-auto pb-3">
-          <div className="grid min-w-[1120px] grid-cols-5 gap-5">
+          <div className="grid min-w-[1320px] grid-cols-6 gap-5">
             {statuses.map((status, index) => {
               const requests = maintenance.filter(
                 (request) => request.status === status
