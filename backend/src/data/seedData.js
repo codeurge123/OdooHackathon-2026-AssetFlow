@@ -11,7 +11,7 @@ export const categories = [
 ];
 
 export const employees = [
-  { name: "Priya Shah", email: "priya@assetflow.test", department: "Engineering", role: "Employee", status: "Active" },
+  { name: "Priya Shah", email: "priya@assetflow.test", password: "Employee@123", department: "Engineering", role: "Employee", status: "Active" },
   { name: "Aditi Rao", email: "aditi@assetflow.test", department: "Engineering", role: "Department Head", status: "Active" },
   { name: "Rohan Mehta", email: "rohan@assetflow.test", department: "Facilities", role: "Asset Manager", status: "Active" },
 ];
@@ -91,12 +91,12 @@ export const auditCycles = [
 ];
 
 export const notifications = [
-  { type: "Alerts", text: "Laptop AF-0014 assigned to Priya Shah", age: "2m ago" },
-  { type: "Approvals", text: "Maintenance request AF-0055 approved", age: "18m ago" },
-  { type: "Bookings", text: "Booking confirmed: Room B2, 2:00 to 3:00 PM", age: "1h ago" },
-  { type: "Approvals", text: "Transfer approved: AF-0033 to Facilities dept", age: "3h ago" },
-  { type: "Alerts", text: "Overdue return: AF-0021 was due 3 days ago", age: "1d ago" },
-  { type: "Alerts", text: "Audit discrepancy flagged: AF-0098 damaged", age: "2d ago" },
+  { type: "Alerts", audience: "Admin", text: "Laptop AF-0014 assigned to Priya Shah", age: "2m ago" },
+  { type: "Approvals", audience: "Admin", text: "Maintenance request AF-0055 approved", age: "18m ago" },
+  { type: "Bookings", audience: "Admin", text: "Booking confirmed: Room B2, 2:00 to 3:00 PM", age: "1h ago" },
+  { type: "Approvals", audience: "Admin", text: "Transfer approved: AF-0033 to Facilities dept", age: "3h ago" },
+  { type: "Alerts", audience: "Admin", text: "Overdue return: AF-0021 was due 3 days ago", age: "1d ago" },
+  { type: "Alerts", audience: "Admin", text: "Audit discrepancy flagged: AF-0098 damaged", age: "2d ago" },
 ];
 
 export const dashboard = {

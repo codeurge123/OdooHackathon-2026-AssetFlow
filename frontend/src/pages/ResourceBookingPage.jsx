@@ -10,9 +10,11 @@ const blankBooking = {
   end: '2026-07-07T11:00',
 }
 
-function ResourceBookingPage({ data, runAction }) {
+function ResourceBookingPage({ data, runAction, currentUser, readOnly = false }) {
   const [form, setForm] = useState(blankBooking)
-  const bookings = data.bookings || []
+  const bookings = currentUser?.role === 'Employee'
+    ? (data.bookings || []).filter((booking) => booking.bookedBy === currentUser.name)
+    : data.bookings || []
   const updateForm = (field, value) => setForm((current) => ({ ...current, [field]: value }))
 
   const handleSubmit = (event) => {
@@ -20,6 +22,8 @@ function ResourceBookingPage({ data, runAction }) {
     runAction(async () => {
       await api.createBooking({
         ...form,
+        bookedBy: currentUser?.name || form.bookedBy,
+        requestedByRole: currentUser?.role,
         start: new Date(form.start).toISOString(),
         end: new Date(form.end).toISOString(),
       })
@@ -31,10 +35,10 @@ function ResourceBookingPage({ data, runAction }) {
     <Panel title="Resource Booking">
       <form className="mb-5 grid gap-3 lg:grid-cols-[1fr_1fr_210px_210px_130px]" onSubmit={handleSubmit}>
         <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" placeholder="Resource" required value={form.resource} onChange={(event) => updateForm('resource', event.target.value)} />
-        <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" placeholder="Booked by" required value={form.bookedBy} onChange={(event) => updateForm('bookedBy', event.target.value)} />
+        <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" disabled={Boolean(currentUser)} placeholder="Booked by" required value={currentUser?.name || form.bookedBy} onChange={(event) => updateForm('bookedBy', event.target.value)} />
         <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" type="datetime-local" required value={form.start} onChange={(event) => updateForm('start', event.target.value)} />
         <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" type="datetime-local" required value={form.end} onChange={(event) => updateForm('end', event.target.value)} />
-        <button className="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-bold text-white">Book Slot</button>
+        <button className="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-bold text-white">{currentUser?.role === 'Employee' ? 'Request Slot' : 'Book Slot'}</button>
       </form>
 
       <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
@@ -44,7 +48,7 @@ function ResourceBookingPage({ data, runAction }) {
             <p>{booking.bookedBy}</p>
             <p>{new Date(booking.start).toLocaleString()} - {new Date(booking.end).toLocaleTimeString()}</p>
             <Pill>{booking.status}</Pill>
-            <button className="rounded-md border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700" onClick={() => runAction(() => api.deleteBooking(booking.id))} type="button">Delete</button>
+            {!readOnly && currentUser?.role !== 'Employee' && <button className="rounded-md border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700" onClick={() => runAction(() => api.deleteBooking(booking.id))} type="button">Delete</button>}
           </div>
         ))}
       </div>

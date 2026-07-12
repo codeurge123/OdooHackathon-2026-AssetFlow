@@ -2,7 +2,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import assetFlowRouter from "./routes/assetFlow.routes.js";
+import apiRouter from "./routes/index.js";
 
 const app = express();
 
@@ -16,7 +16,7 @@ app.use(cors({
 
 app.use(cookieParser());
 
-app.use("/api", assetFlowRouter);
+app.use("/api", apiRouter);
 
 app.use((err, req, res, next) => {
   console.error(err);

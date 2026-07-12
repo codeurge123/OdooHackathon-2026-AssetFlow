@@ -17,6 +17,8 @@ const request = async (path, options = {}) => {
 }
 
 export const api = {
+  login: (payload) => request('/login', { method: 'POST', body: JSON.stringify(payload) }),
+  createEmployeeAccount: (payload) => request('/employee/signup', { method: 'POST', body: JSON.stringify(payload) }),
   getDashboard: () => request('/dashboard'),
   getOrganization: () => request('/organization'),
   getAssets: () => request('/assets'),
@@ -24,7 +26,7 @@ export const api = {
   getMaintenance: () => request('/maintenance'),
   getAudits: () => request('/audits'),
   getReports: () => request('/reports'),
-  getNotifications: () => request('/notifications'),
+  getNotifications: (audience = 'Admin') => request(`/notifications?audience=${encodeURIComponent(audience)}`),
 
   createDepartment: (payload) => request('/departments', { method: 'POST', body: JSON.stringify(payload) }),
   deleteDepartment: (id) => request(`/departments/${id}`, { method: 'DELETE' }),
