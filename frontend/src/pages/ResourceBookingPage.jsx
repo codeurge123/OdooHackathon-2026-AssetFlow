@@ -23,6 +23,7 @@ function ResourceBookingPage({ data, runAction, currentUser, readOnly = false })
       await api.createBooking({
         ...form,
         bookedBy: currentUser?.name || form.bookedBy,
+        requesterEmail: currentUser?.email,
         requestedByRole: currentUser?.role,
         start: new Date(form.start).toISOString(),
         end: new Date(form.end).toISOString(),
@@ -32,7 +33,7 @@ function ResourceBookingPage({ data, runAction, currentUser, readOnly = false })
   }
 
   return (
-    <Panel title="Resource Booking">
+    <Panel title={currentUser?.role === 'Employee' ? 'Request Resource' : 'Resource Booking'}>
       <form className="mb-5 grid gap-3 lg:grid-cols-[1fr_1fr_210px_210px_130px]" onSubmit={handleSubmit}>
         <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" placeholder="Resource" required value={form.resource} onChange={(event) => updateForm('resource', event.target.value)} />
         <input className="rounded-lg border border-slate-300 px-4 py-3 text-sm" disabled={Boolean(currentUser)} placeholder="Booked by" required value={currentUser?.name || form.bookedBy} onChange={(event) => updateForm('bookedBy', event.target.value)} />
@@ -48,7 +49,13 @@ function ResourceBookingPage({ data, runAction, currentUser, readOnly = false })
             <p>{booking.bookedBy}</p>
             <p>{new Date(booking.start).toLocaleString()} - {new Date(booking.end).toLocaleTimeString()}</p>
             <Pill>{booking.status}</Pill>
-            {!readOnly && currentUser?.role !== 'Employee' && <button className="rounded-md border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700" onClick={() => runAction(() => api.deleteBooking(booking.id))} type="button">Delete</button>}
+            {currentUser?.role !== 'Employee' && booking.status === 'Requested' && (
+              <div className="flex gap-2">
+                <button className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white" onClick={() => runAction(() => api.updateBooking(booking.id, { status: 'Upcoming' }))} type="button">Approve</button>
+                <button className="rounded-md bg-rose-600 px-3 py-1.5 text-xs font-bold text-white" onClick={() => runAction(() => api.updateBooking(booking.id, { status: 'Rejected' }))} type="button">Reject</button>
+              </div>
+            )}
+            {!readOnly && <button className="rounded-md border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700" onClick={() => runAction(() => api.deleteBooking(booking.id))} type="button">Delete</button>}
           </div>
         ))}
       </div>

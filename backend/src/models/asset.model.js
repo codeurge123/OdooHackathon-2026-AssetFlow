@@ -14,6 +14,7 @@ const assetSchema = new mongoose.Schema(
       default: "Available",
     },
     holder: { type: String, default: null },
+    holderEmail: { type: String, default: null },
     location: { type: String, required: true },
     condition: { type: String, default: "Good" },
     sharedBookable: { type: Boolean, default: false },

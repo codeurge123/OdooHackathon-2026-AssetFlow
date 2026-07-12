@@ -1,44 +1,81 @@
 import { motion } from 'framer-motion'
-import Panel from '../components/Panel'
+import { FiAlertTriangle, FiArchive, FiCalendar, FiCheckCircle, FiClock, FiRepeat, FiTool } from 'react-icons/fi'
+
+const cardMeta = [
+  ['Available Assets', 'assetsAvailable', FiCheckCircle, '+12%'],
+  ['Allocated', 'assetsAllocated', FiArchive, 'In use'],
+  ['Under Maintenance', 'underMaintenance', FiTool, 'Open'],
+  ['Active Bookings', 'activeBookings', FiCalendar, 'Live'],
+  ['Pending Transfers', 'pendingTransfers', FiRepeat, 'Urgent'],
+  ['Upcoming Returns', 'upcomingReturns', FiClock, 'Next 48h'],
+]
+
+const activities = [
+  ['Laptop AF-0114 allocated to Priya Shah', 'IT Department - Building B, Room 402', '14 mins ago', 'bg-blue-100 text-blue-700'],
+  ['Room B2 - booking confirmed - 2:00 to 3:00 PM', 'Marketing Team Sync - Internal Booking', '1 hour ago', 'bg-rose-100 text-rose-700'],
+  ['Projector AF-0062 - maintenance resolved', 'Bulb replaced and lens calibrated - Logistics Hub', '3 hours ago', 'bg-emerald-100 text-emerald-700'],
+  ['New Audit Cycle Started', 'FY24 Q3 Physical Inventory Audit - Managed by Audit Team', 'Yesterday', 'bg-amber-100 text-amber-700'],
+]
 
 function DashboardPage({ data, setActive }) {
   const dashboard = data.dashboard || { kpis: {}, overdueReturns: 0 }
-  const kpis = [
-    ['Assets Available', dashboard.kpis.assetsAvailable || 0],
-    ['Assets Allocated', dashboard.kpis.assetsAllocated || 0],
-    ['Under Maintenance', dashboard.kpis.underMaintenance || 0],
-    ['Active Bookings', dashboard.kpis.activeBookings || 0],
-    ['Pending Transfers', dashboard.kpis.pendingTransfers || 0],
-    ['Upcoming Returns', dashboard.kpis.upcomingReturns || 0],
-  ]
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-slate-950">Today&apos;s Overview</h2>
-        <p className="mt-1 text-sm text-slate-600">Operational snapshot across assets, resources, maintenance, transfers, and returns.</p>
+        <h2 className="text-3xl font-black text-slate-950">Today&apos;s Overview</h2>
+        <p className="mt-1 text-sm text-slate-600">Real-time status of your enterprise assets and operations.</p>
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        {kpis.map(([label, value]) => (
-          <motion.div whileHover={{ y: -3 }} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm" key={label}>
-            <p className="text-sm font-semibold text-slate-500">{label}</p>
-            <p className="mt-3 text-3xl font-black text-slate-950">{value}</p>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {cardMeta.map(([label, key, Icon, note]) => (
+          <motion.div whileHover={{ y: -3 }} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm" key={key}>
+            <div className="flex items-start justify-between">
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-cyan-50 text-cyan-700">
+                <Icon className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-black uppercase tracking-wide text-slate-500">{note}</span>
+            </div>
+            <p className="mt-8 text-3xl font-black text-slate-950">{dashboard.kpis[key] || 0}</p>
+            <p className="mt-2 text-xs font-black uppercase tracking-[0.18em] text-slate-500">{label}</p>
           </motion.div>
         ))}
       </div>
-      <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{dashboard.overdueReturns || 0} assets overdue for return - flagged for follow-up</div>
-      <div className="flex flex-wrap gap-3">
-        <button className="rounded-lg bg-cyan-700 px-4 py-3 text-sm font-bold text-white" onClick={() => setActive('Assets')}>Register Asset</button>
-        <button className="rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" onClick={() => setActive('Resource Booking')}>Book Resource</button>
-        <button className="rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" onClick={() => setActive('Maintenance')}>Raise Maintenance Request</button>
-      </div>
-      <Panel title="Recent Activity">
-        <div className="space-y-3 text-sm text-slate-700">
-          <p>Laptop AF-0119 allocated to Priya Shah - IT dept</p>
-          <p>Room B2 booking confirmed - 2:00 to 3:00 PM</p>
-          <p>Projector AF-0062 maintenance resolved</p>
+
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-rose-200 bg-rose-50 px-5 py-4 text-rose-700">
+        <div className="flex items-center gap-3">
+          <FiAlertTriangle className="h-5 w-5" />
+          <div>
+            <p className="text-sm font-black">{dashboard.overdueReturns || 0} assets overdue for return - flagged for follow-up</p>
+            <p className="text-xs font-semibold text-rose-500">Immediate attention required for inventory reconciliation.</p>
+          </div>
         </div>
-      </Panel>
+        <button className="rounded-lg bg-rose-700 px-4 py-2 text-sm font-bold text-white" type="button">View All</button>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <button className="rounded-lg bg-[#1454ad] px-5 py-3 text-sm font-bold text-white" onClick={() => setActive('Assets')}>+ Register Asset</button>
+        <button className="rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700" onClick={() => setActive('Resource Booking')}>Book Resource</button>
+      </div>
+
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+          <h3 className="text-xl font-black text-slate-950">Recent Activity</h3>
+          <button className="text-sm font-bold text-slate-500" type="button">View History</button>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {activities.map(([title, subtitle, time, style]) => (
+            <div className="grid gap-4 px-6 py-5 text-sm md:grid-cols-[auto_1fr_auto]" key={title}>
+              <span className={`grid h-9 w-9 place-items-center rounded-lg ${style}`}>■</span>
+              <div>
+                <p className="font-bold text-slate-900">{title}</p>
+                <p className="mt-1 text-xs font-semibold text-slate-500">{subtitle}</p>
+              </div>
+              <p className="font-semibold text-slate-500">{time}</p>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   )
 }

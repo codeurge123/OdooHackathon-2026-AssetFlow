@@ -1,4 +1,4 @@
-export const navItems = [
+export const adminNavItems = [
   'Dashboard',
   'Organization setup',
   'Assets',
@@ -7,6 +7,13 @@ export const navItems = [
   'Maintenance',
   'Audit',
   'Reports',
+  'Notifications',
+]
+
+export const employeeNavItems = [
+  'Personal Dashboard',
+  'Request Resource',
+  'Maintenance',
   'Notifications',
 ]
 

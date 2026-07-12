@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import AppShell from './layouts/AppShell'
 import AllocationTransferPage from './pages/AllocationTransferPage'
 import AssetsPage from './pages/AssetsPage'
@@ -11,6 +11,7 @@ import NotificationsPage from './pages/NotificationsPage'
 import OrganizationSetupPage from './pages/OrganizationSetupPage'
 import ReportsPage from './pages/ReportsPage'
 import ResourceBookingPage from './pages/ResourceBookingPage'
+import { employeeNavItems } from './data/assetFlowData'
 import { api } from './services/api'
 import './App.css'
 
@@ -26,6 +27,13 @@ const screens = {
   Notifications: NotificationsPage,
 }
 
+const employeeScreens = {
+  'Personal Dashboard': EmployeeWorkspacePage,
+  'Request Resource': ResourceBookingPage,
+  Maintenance: MaintenancePage,
+  Notifications: NotificationsPage,
+}
+
 const initialData = {
   dashboard: null,
   organization: { departments: [], categories: [], employees: [] },
@@ -37,18 +45,28 @@ const initialData = {
   notifications: [],
 }
 
+const SESSION_KEY = 'assetflow-session'
+const THEME_KEY = 'assetflow-theme'
+
 function App() {
-  const [signedIn, setSignedIn] = useState(false)
-  const [active, setActive] = useState('Dashboard')
+  const savedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem(SESSION_KEY))
+    } catch {
+      return null
+    }
+  })()
+  const [signedIn, setSignedIn] = useState(Boolean(savedUser))
+  const [active, setActive] = useState(savedUser?.role === 'Employee' ? 'Personal Dashboard' : 'Dashboard')
   const [data, setData] = useState(initialData)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [authError, setAuthError] = useState('')
-  const [currentUser, setCurrentUser] = useState(null)
-  const ActiveScreen = screens[active]
+  const [currentUser, setCurrentUser] = useState(savedUser)
+  const [readNotificationIds, setReadNotificationIds] = useState(() => new Set())
+  const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || 'light')
+  const ActiveScreen = currentUser?.role === 'Employee' ? employeeScreens[active] : screens[active]
 
   const loadData = useCallback(async (user = currentUser) => {
-    setLoading(true)
     setError('')
     try {
       const audience = user?.role === 'Admin' ? 'Admin' : 'Employee'
@@ -60,20 +78,19 @@ function App() {
         api.getMaintenance(),
         api.getAudits(),
         api.getReports(),
-        api.getNotifications(audience),
+        api.getNotifications(audience, user),
       ])
       setData({ dashboard, organization, assets, bookings, maintenance, audits, reports, notifications })
     } catch (requestError) {
       setError(requestError.message)
-    } finally {
-      setLoading(false)
     }
   }, [currentUser])
 
   const handleAuthenticated = async (user) => {
     setCurrentUser(user)
+    localStorage.setItem(SESSION_KEY, JSON.stringify(user))
     setSignedIn(true)
-    setActive(user.role === 'Admin' ? 'Dashboard' : 'Employee Workspace')
+    setActive(user.role === 'Admin' ? 'Dashboard' : 'Personal Dashboard')
     await loadData(user)
   }
 
@@ -107,33 +124,76 @@ function App() {
     }
   }
 
+  useEffect(() => {
+    if (!currentUser) return undefined
+
+    const initialLoad = window.setTimeout(() => {
+      loadData(currentUser)
+    }, 0)
+    const interval = window.setInterval(() => {
+      loadData(currentUser)
+    }, 4000)
+
+    return () => {
+      window.clearTimeout(initialLoad)
+      window.clearInterval(interval)
+    }
+  }, [currentUser, loadData])
+
+  const logout = () => {
+    localStorage.removeItem(SESSION_KEY)
+    setSignedIn(false)
+    setCurrentUser(null)
+    setData(initialData)
+  }
+
+  const notificationIds = data.notifications.map((notification) => notification.id || notification.createdAt || notification.text)
+  const unreadCount = notificationIds.filter((id) => !readNotificationIds.has(id)).length
+
+  const markNotificationsRead = () => {
+    setReadNotificationIds(new Set(notificationIds))
+  }
+
+  const toggleTheme = () => {
+    setTheme((current) => {
+      const next = current === 'dark' ? 'light' : 'dark'
+      localStorage.setItem(THEME_KEY, next)
+      return next
+    })
+  }
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+  }, [theme])
+
   if (!signedIn) {
     return <LoginPage authError={authError} onCreateAccount={handleCreateAccount} onLogin={handleLogin} />
   }
 
   if (currentUser?.role === 'Employee') {
     return (
-      <EmployeeWorkspacePage
+      <AppShell
+        active={active}
         currentUser={currentUser}
-        data={data}
-        runAction={runAction}
-        onLogout={() => {
-          setSignedIn(false)
-          setCurrentUser(null)
-          setData(initialData)
-        }}
-      />
+        navItems={employeeNavItems}
+        notificationCount={unreadCount}
+        onLogout={logout}
+        onNotificationsOpen={markNotificationsRead}
+        onToggleTheme={toggleTheme}
+        setActive={setActive}
+        theme={theme}
+      >
+        {error && <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{error}</div>}
+        <ActiveScreen currentUser={currentUser} data={data} runAction={runAction} setActive={setActive} />
+      </AppShell>
     )
   }
 
   return (
     <AppShell active={active} currentUser={currentUser} setActive={setActive} onLogout={() => {
-      setSignedIn(false)
-      setCurrentUser(null)
-      setData(initialData)
-    }}>
+      logout()
+    }} notificationCount={unreadCount} onNotificationsOpen={markNotificationsRead} onToggleTheme={toggleTheme} theme={theme}>
       {error && <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{error}</div>}
-      {loading && <div className="mb-4 rounded-lg border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm font-semibold text-cyan-700">Syncing with backend...</div>}
       <ActiveScreen currentUser={currentUser} data={data} runAction={runAction} setActive={setActive} />
     </AppShell>
   )

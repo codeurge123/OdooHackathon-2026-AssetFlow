@@ -3,7 +3,13 @@ import { useState } from 'react'
 import Panel from '../components/Panel'
 import { api } from '../services/api'
 
-const statuses = ['Pending', 'Approved', 'Technician Assigned', 'In Progress', 'Resolved']
+const statuses = ['Pending', 'Approved', 'Rejected', 'Technician Assigned', 'In Progress', 'Resolved']
+const nextStatus = {
+  Pending: 'Approved',
+  Approved: 'Technician Assigned',
+  'Technician Assigned': 'In Progress',
+  'In Progress': 'Resolved',
+}
 const blankRequest = { assetTag: '', title: '', priority: 'Medium', status: 'Pending' }
 
 const priorityStyles = {
@@ -12,10 +18,13 @@ const priorityStyles = {
   High: 'border-l-amber-600 bg-amber-50 text-amber-800',
 }
 
-function MaintenancePage({ data, runAction }) {
+function MaintenancePage({ data, runAction, currentUser }) {
   const [form, setForm] = useState(blankRequest)
   const [showRequestForm, setShowRequestForm] = useState(false)
-  const maintenance = data.maintenance || []
+  const isEmployee = currentUser?.role === 'Employee'
+  const maintenance = isEmployee
+    ? (data.maintenance || []).filter((request) => request.requestedBy === currentUser.name)
+    : data.maintenance || []
 
   const updateForm = (field, value) =>
     setForm((current) => ({ ...current, [field]: value }))
@@ -23,7 +32,12 @@ function MaintenancePage({ data, runAction }) {
   const handleSubmit = (event) => {
     event.preventDefault()
     runAction(async () => {
-      await api.createMaintenance(form)
+      await api.createMaintenance({
+        ...form,
+        requestedBy: currentUser?.name,
+        requesterEmail: currentUser?.email,
+        requestedByRole: currentUser?.role || 'Admin',
+      })
       setForm(blankRequest)
       setShowRequestForm(false)
     })
@@ -34,22 +48,22 @@ function MaintenancePage({ data, runAction }) {
       <div className="space-y-6">
         <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-2xl font-bold tracking-tight text-slate-950">
-              Maintenance Management
-            </p>
+            <p className="text-2xl font-bold tracking-tight text-slate-950">{isEmployee ? 'My Maintenance Requests' : 'Maintenance Management'}</p>
             <p className="mt-1 text-sm text-slate-500">
-              Track, prioritize, and resolve maintenance requests across enterprise assets.
+              {isEmployee ? 'Raise requests and track admin decisions. You can delete your own request, but cannot move or edit status.' : 'Track, prioritize, and resolve maintenance requests across enterprise assets.'}
             </p>
           </div>
 
-          <button
-            className="inline-flex items-center justify-center gap-2 rounded-md bg-[#1454ad] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#0f438d] focus:outline-none focus:ring-4 focus:ring-blue-100"
-            onClick={() => setShowRequestForm((current) => !current)}
-            type="button"
-          >
-            <span className="text-lg leading-none">+</span>
-            Raise Maintenance Request
-          </button>
+          {isEmployee && (
+            <button
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-[#1454ad] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#0f438d] focus:outline-none focus:ring-4 focus:ring-blue-100"
+              onClick={() => setShowRequestForm((current) => !current)}
+              type="button"
+            >
+              <span className="text-lg leading-none">+</span>
+              Raise Maintenance Request
+            </button>
+          )}
         </div>
 
         {showRequestForm && (
@@ -104,10 +118,12 @@ function MaintenancePage({ data, runAction }) {
                           index === 0
                             ? 'bg-slate-500'
                             : index === 1
-                              ? 'bg-blue-500'
-                              : index === 2
+                            ? 'bg-blue-500'
+                            : status === 'Rejected'
+                              ? 'bg-rose-500'
+                              : index === 3
                                 ? 'bg-violet-500'
-                                : index === 3
+                                : index === 4
                                   ? 'bg-amber-500'
                                   : 'bg-emerald-500'
                         }`}
@@ -152,19 +168,28 @@ function MaintenancePage({ data, runAction }) {
                               Current status
                             </span>
                             <div className="flex gap-1.5">
-                              {status !== 'Resolved' && (
+                              {!isEmployee && status === 'Pending' && (
+                                <button
+                                  className="rounded bg-rose-600 px-2 py-1 text-[10px] font-bold text-white transition hover:bg-rose-700"
+                                  onClick={() => runAction(() => api.updateMaintenance(request.id, { status: 'Rejected' }))}
+                                  type="button"
+                                >
+                                  Reject
+                                </button>
+                              )}
+                              {!isEmployee && !['Resolved', 'Rejected'].includes(status) && (
                                 <button
                                   className="rounded bg-[#1454ad] px-2 py-1 text-[10px] font-bold text-white transition hover:bg-[#0f438d]"
                                   onClick={() =>
                                     runAction(() =>
                                       api.updateMaintenance(request.id, {
-                                        status: statuses[statuses.indexOf(status) + 1],
+                                        status: nextStatus[status],
                                       })
                                     )
                                   }
                                   type="button"
                                 >
-                                  Move
+                                  {status === 'Pending' ? 'Approve' : 'Move'}
                                 </button>
                               )}
                               <button

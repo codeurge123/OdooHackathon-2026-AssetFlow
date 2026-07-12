@@ -51,7 +51,7 @@ export const createRecord = async (collection, model, payload) => {
     return normalizeDocument(document);
   }
 
-  const item = { id: `${collection}-${Date.now()}`, ...payload };
+  const item = { id: `${collection}-${Date.now()}`, createdAt: new Date().toISOString(), ...payload };
   memoryStore[collection].unshift(item);
   return item;
 };
