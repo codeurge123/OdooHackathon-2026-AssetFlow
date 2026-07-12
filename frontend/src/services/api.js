@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://odoohackathon-2026-assetflow.onrender.com/api'
 
 const request = async (path, options = {}) => {
   const response = await fetch(`${API_BASE_URL}${path}`, {
