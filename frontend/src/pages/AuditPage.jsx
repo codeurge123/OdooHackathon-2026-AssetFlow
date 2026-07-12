@@ -4,13 +4,7 @@ import Panel from '../components/Panel'
 import Pill from '../components/Pill'
 import { api } from '../services/api'
 
-const defaultItems = [
-  { asset: 'AF-003 Dell Laptop', expectedLocation: 'Desk E12', verification: 'Verified' },
-  { asset: 'AF-9921 Office Chair', expectedLocation: 'Desk E14', verification: 'Missing' },
-  { asset: 'AF-9838 Monitor', expectedLocation: 'Desk E15', verification: 'Damaged' },
-]
-
-function AuditPage({ data, runAction }) {
+function AuditPage({ data, runAction, currentUser }) {
   const audits = data.audits || []
   const [title, setTitle] = useState('')
   const [auditors, setAuditors] = useState('')
@@ -23,9 +17,10 @@ function AuditPage({ data, runAction }) {
     runAction(async () => {
       await api.createAudit({
         title,
+        organization: currentUser?.organization,
         dateRange,
         auditors: auditors.split(',').map((item) => item.trim()).filter(Boolean),
-        items: defaultItems,
+        items: [],
         status: 'In Progress',
       })
       setTitle('')
@@ -71,6 +66,11 @@ function AuditPage({ data, runAction }) {
                   <Pill>{item.verification}</Pill>
                 </div>
               ))}
+              {!(activeAudit.items || []).length && (
+                <div className="border-t border-slate-100 px-5 py-8 text-center text-sm font-semibold text-slate-500">
+                  No audit items added yet.
+                </div>
+              )}
             </div>
 
             <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-black text-amber-800">
@@ -79,7 +79,7 @@ function AuditPage({ data, runAction }) {
 
             <button
               className="mt-5 inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-3 text-sm font-bold text-white"
-              onClick={() => runAction(() => api.updateAudit(activeAudit.id, { status: 'Completed', closed: true }))}
+              onClick={() => runAction(() => api.updateAudit(activeAudit.id, { organization: currentUser?.organization, status: 'Completed', closed: true }))}
               type="button"
             >
               {activeAudit.closed ? <FiCheckCircle /> : <FiXCircle />}

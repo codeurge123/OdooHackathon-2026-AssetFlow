@@ -1,6 +1,18 @@
 import * as XLSX from 'xlsx'
-import { FiActivity, FiArchive, FiBarChart2, FiDownload, FiFileText, FiTool } from 'react-icons/fi'
+import { Bar, Doughnut } from 'react-chartjs-2'
+import {
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  Tooltip,
+} from 'chart.js'
+import { FiActivity, FiBarChart2, FiDownload, FiFileText, FiTool } from 'react-icons/fi'
 import Panel from '../components/Panel'
+
+ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Legend, Tooltip)
 
 const money = (value) => {
   const amount = Number(value || 0)
@@ -10,6 +22,10 @@ const money = (value) => {
 const percent = (value) => `${Number(value || 0)}%`
 
 const itemName = (item) => (typeof item === 'string' ? item : item.name)
+
+const themeAwareTextColor = () => (
+  document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'
+)
 
 function ReportsPage({ data, currentUser }) {
   const reports = data.reports || {}
@@ -24,15 +40,13 @@ function ReportsPage({ data, currentUser }) {
   const totalAssets = Number(reports.totalAssets || 0)
   const utilizationRate = Number(reports.utilizationRate || 0)
   const globalEfficiency = Number(reports.globalEfficiency || 0)
-  const maxPurchaseValue = Math.max(...monthlyPurchases.map((item) => Number(item.value || 0)), 1)
-  const maxCategoryValue = Math.max(...categoryData.map((item) => Number(item.value || 0)), 1)
+  const chartTextColor = themeAwareTextColor()
 
   const exportReport = () => {
     const workbook = XLSX.utils.book_new()
     const summarySheet = XLSX.utils.json_to_sheet([
       {
         'Total Assets': totalAssets,
-        'Total Asset Value': isAdmin ? reports.totalAssetValue || 0 : 'Admin only',
         'Utilization Rate': percent(reports.utilizationRate),
         'Availability Rate': percent(reports.availabilityRate),
         'Maintenance Health': percent(reports.maintenanceHealth),
@@ -56,14 +70,6 @@ function ReportsPage({ data, currentUser }) {
   }
 
   const metricCards = [
-    {
-      label: 'Total Asset Value',
-      value: isAdmin ? money(reports.totalAssetValue) : 'Admin only',
-      helper: `${totalAssets} assets`,
-      icon: FiArchive,
-      bar: totalAssets ? 82 : 0,
-      color: 'bg-blue-100 text-[#1454ad]',
-    },
     {
       label: 'Utilization Rate',
       value: percent(utilizationRate),
@@ -90,6 +96,51 @@ function ReportsPage({ data, currentUser }) {
     },
   ]
 
+  const purchaseChartData = {
+    labels: monthlyPurchases.map((item) => item.month),
+    datasets: [
+      {
+        label: 'Asset purchase value',
+        data: monthlyPurchases.map((item) => Number(item.value || 0)),
+        backgroundColor: '#1454ad',
+        borderRadius: 6,
+      },
+    ],
+  }
+
+  const categoryChartData = {
+    labels: categoryData.map((item) => item.category),
+    datasets: [
+      {
+        label: 'Assets',
+        data: categoryData.map((item) => Number(item.count || 0)),
+        backgroundColor: ['#1454ad', '#0891b2', '#b45309', '#64748b', '#16a34a', '#dc2626'],
+        borderWidth: 0,
+      },
+    ],
+  }
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: chartTextColor, boxWidth: 12, font: { weight: 700 } } },
+      tooltip: { callbacks: { label: (context) => `${context.dataset.label}: ${context.formattedValue}` } },
+    },
+    scales: {
+      x: { ticks: { color: chartTextColor }, grid: { display: false } },
+      y: { ticks: { color: chartTextColor }, grid: { color: 'rgba(148, 163, 184, 0.22)' } },
+    },
+  }
+
+  const doughnutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { color: chartTextColor, boxWidth: 12, font: { weight: 700 } } },
+    },
+  }
+
   return (
     <Panel title="Reports & Analytics">
       <div className="space-y-6">
@@ -104,7 +155,7 @@ function ReportsPage({ data, currentUser }) {
           </button>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {metricCards.map(({ label, value, helper, icon: Icon, bar, color }) => (
             <section className="border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950" key={label}>
               <div className="flex items-start justify-between">
@@ -131,13 +182,8 @@ function ReportsPage({ data, currentUser }) {
               </div>
               <span className="rounded-md bg-blue-50 px-3 py-1.5 text-xs font-bold text-[#1454ad] dark:bg-blue-950 dark:text-blue-200">Value</span>
             </div>
-            <div className="mt-8 flex h-44 items-end gap-3 border-b border-slate-200 pb-2 dark:border-slate-800">
-              {monthlyPurchases.length ? monthlyPurchases.map((item) => (
-                <div className="flex h-full flex-1 flex-col justify-end gap-2" key={item.month}>
-                  <div className="min-h-1 w-full bg-[#1454ad] transition hover:bg-blue-700" style={{ height: `${Math.max(6, (Number(item.value || 0) / maxPurchaseValue) * 100)}%` }} title={`${item.month}: ${money(item.value)}`} />
-                  <span className="text-center text-[10px] font-medium text-slate-500 dark:text-slate-400">{item.month}</span>
-                </div>
-              )) : (
+            <div className="mt-6 h-64">
+              {monthlyPurchases.length ? <Bar data={purchaseChartData} options={chartOptions} /> : (
                 <div className="grid h-full w-full place-items-center text-sm text-slate-400">No asset purchase data yet.</div>
               )}
             </div>
@@ -146,20 +192,8 @@ function ReportsPage({ data, currentUser }) {
           <section className="border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
             <h3 className="font-bold text-slate-900 dark:text-white">Assets by Category</h3>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Inventory count and value by type.</p>
-            <div className="mt-6 space-y-4">
-              {categoryData.length ? categoryData.map((item) => (
-                <div key={item.category}>
-                  <div className="mb-1 flex items-center justify-between gap-3 text-xs">
-                    <span className="font-bold text-slate-700 dark:text-slate-200">{item.category}</span>
-                    <span className="text-slate-500 dark:text-slate-400">{item.count} assets{isAdmin ? ` · ${money(item.value)}` : ''}</span>
-                  </div>
-                  <div className="h-2 bg-slate-100 dark:bg-slate-800">
-                    <div className="h-full bg-[#1454ad]" style={{ width: `${Math.max(8, (Number(item.value || item.count || 0) / maxCategoryValue) * 100)}%` }} />
-                  </div>
-                </div>
-              )) : (
-                <p className="text-sm text-slate-400">No category data available.</p>
-              )}
+            <div className="mt-6 h-64">
+              {categoryData.length ? <Doughnut data={categoryChartData} options={doughnutOptions} /> : <p className="text-sm text-slate-400">No category data available.</p>}
             </div>
           </section>
         </div>

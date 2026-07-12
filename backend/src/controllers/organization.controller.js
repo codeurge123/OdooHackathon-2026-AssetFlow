@@ -1,6 +1,7 @@
 import { Category, Department, Employee } from "../models/index.js";
 import { createRecord, deleteRecord, listRecords, updateRecord } from "../services/dataSource.service.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { requestedOrganization, scopeRecords } from "../utils/organizationScope.js";
 
 const crud = (collection, model) => ({
   list: asyncHandler(async (req, res) => res.json(await listRecords(collection, model))),
@@ -18,10 +19,11 @@ const crud = (collection, model) => ({
 });
 
 export const getOrganization = asyncHandler(async (req, res) => {
+  const organization = requestedOrganization(req);
   res.json({
     departments: await listRecords("departments", Department),
     categories: await listRecords("categories", Category),
-    employees: await listRecords("employees", Employee),
+    employees: scopeRecords(await listRecords("employees", Employee), organization),
   });
 });
 

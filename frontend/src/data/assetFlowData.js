@@ -17,53 +17,19 @@ export const employeeNavItems = [
   'Notifications',
 ]
 
-export const departments = [
-  { name: 'Engineering', head: 'Aditi Rao', parent: '-', status: 'Active' },
-  { name: 'Facilities', head: 'Rohan Mehta', parent: '-', status: 'Active' },
-  { name: 'Field Ops (East)', head: 'Sana Iqbal', parent: 'Field Ops', status: 'Inactive' },
-]
+export const departments = []
 
-export const categories = [
-  { name: 'Electronics', fields: 'Warranty period, serial number', assets: 82, status: 'Active' },
-  { name: 'Furniture', fields: 'Material, floor location', assets: 46, status: 'Active' },
-  { name: 'Vehicles', fields: 'Mileage, service cycle', assets: 12, status: 'Active' },
-]
+export const categories = []
 
-export const employees = [
-  { name: 'Priya Shah', email: 'priya@assetflow.test', organization: 'AssetFlow Demo Org', department: 'Engineering', role: 'Employee', status: 'Active' },
-  { name: 'Aditi Rao', email: 'aditi@assetflow.test', organization: 'AssetFlow Demo Org', department: 'Engineering', role: 'Department Head', status: 'Active' },
-  { name: 'Rohan Mehta', email: 'rohan@assetflow.test', organization: 'AssetFlow Demo Org', department: 'Facilities', role: 'Asset Manager', status: 'Active' },
-]
+export const employees = []
 
-export const assets = [
-  { tag: 'AF-0114', name: 'Dell Laptop', category: 'Electronics', status: 'Allocated', holder: 'Priya Shah', location: 'Bengaluru', condition: 'Good', acquisitionCost: 78000 },
-  { tag: 'AF-0062', name: 'Projector', category: 'Electronics', status: 'Under Maintenance', holder: '-', location: 'HQ Floor 2', condition: 'Faulty bulb', acquisitionCost: 54000 },
-  { tag: 'AF-0201', name: 'Office Chair', category: 'Furniture', status: 'Available', holder: '-', location: 'Warehouse', condition: 'Good', acquisitionCost: 8500 },
-  { tag: 'AF-0301', name: 'Camera Kit', category: 'Electronics', status: 'Reserved', holder: 'Media Team', location: 'Studio', condition: 'Excellent', acquisitionCost: 125000 },
-]
+export const assets = []
 
-export const maintenanceColumns = [
-  { title: 'Pending', cards: ['AF-0062 Projector bulb not turning on'] },
-  { title: 'Approved', cards: ['AF-003 AC unit noisy compressor'] },
-  { title: 'Technician Assigned', cards: ['AF-0078 Forklift - tech: R Varma'] },
-  { title: 'In Progress', cards: ['AF-897 Printer jam - parts ordered'] },
-  { title: 'Resolved', cards: ['AF-873 Chair repair resolved 7 Jul'] },
-]
+export const maintenanceColumns = []
 
-export const auditRows = [
-  { asset: 'AF-003 Dell Laptop', expected: 'Desk E12', verification: 'Verified' },
-  { asset: 'AF-9921 Office Chair', expected: 'Desk E14', verification: 'Missing' },
-  { asset: 'AF-9838 Monitor', expected: 'Desk E15', verification: 'Damaged' },
-]
+export const auditRows = []
 
-export const notifications = [
-  { type: 'Alerts', text: 'Laptop AF-0014 assigned to Priya Shah', age: '2m ago' },
-  { type: 'Approvals', text: 'Maintenance request AF-0055 approved', age: '18m ago' },
-  { type: 'Bookings', text: 'Booking confirmed: Room B2, 2:00 to 3:00 PM', age: '1h ago' },
-  { type: 'Approvals', text: 'Transfer approved: AF-0033 to Facilities dept', age: '3h ago' },
-  { type: 'Alerts', text: 'Overdue return: AF-0021 was due 3 days ago', age: '1d ago' },
-  { type: 'Alerts', text: 'Audit discrepancy flagged: AF-0098 damaged', age: '2d ago' },
-]
+export const notifications = []
 
 export const statusStyles = {
   Active: 'bg-emerald-50 text-emerald-700 ring-emerald-200',

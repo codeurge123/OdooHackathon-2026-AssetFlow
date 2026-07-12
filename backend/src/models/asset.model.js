@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const assetSchema = new mongoose.Schema(
   {
     tag: { type: String, required: true, unique: true },
+    organization: { type: String, required: true, default: "AssetFlow Demo Org" },
     name: { type: String, required: true },
     category: { type: String, required: true },
     serialNumber: { type: String },

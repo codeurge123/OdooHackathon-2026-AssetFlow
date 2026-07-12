@@ -22,6 +22,7 @@ function ResourceBookingPage({ data, runAction, currentUser, readOnly = false })
     runAction(async () => {
       await api.createBooking({
         ...form,
+        organization: currentUser?.organization,
         bookedBy: currentUser?.name || form.bookedBy,
         requesterEmail: currentUser?.email,
         requestedByRole: currentUser?.role,
@@ -53,8 +54,8 @@ function ResourceBookingPage({ data, runAction, currentUser, readOnly = false })
             <Pill>{booking.status}</Pill>
             {currentUser?.role !== 'Employee' && booking.status === 'Requested' && (
               <div className="flex gap-2">
-                <button className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white" onClick={() => runAction(() => api.updateBooking(booking.id, { status: 'Upcoming' }))} type="button">Approve</button>
-                <button className="rounded-md bg-rose-600 px-3 py-1.5 text-xs font-bold text-white" onClick={() => runAction(() => api.updateBooking(booking.id, { status: 'Rejected' }))} type="button">Reject</button>
+                <button className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white" onClick={() => runAction(() => api.updateBooking(booking.id, { organization: currentUser?.organization, status: 'Upcoming' }))} type="button">Approve</button>
+                <button className="rounded-md bg-rose-600 px-3 py-1.5 text-xs font-bold text-white" onClick={() => runAction(() => api.updateBooking(booking.id, { organization: currentUser?.organization, status: 'Rejected' }))} type="button">Reject</button>
               </div>
             )}
             {!readOnly && <button className="rounded-md border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-700" onClick={() => runAction(() => api.deleteBooking(booking.id))} type="button">Delete</button>}

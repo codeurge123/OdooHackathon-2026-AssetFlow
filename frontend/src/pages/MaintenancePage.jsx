@@ -34,6 +34,7 @@ function MaintenancePage({ data, runAction, currentUser }) {
     runAction(async () => {
       await api.createMaintenance({
         ...form,
+        organization: currentUser?.organization,
         requestedBy: currentUser?.name,
         requesterEmail: currentUser?.email,
         requestedByRole: currentUser?.role || 'Admin',
@@ -171,7 +172,7 @@ function MaintenancePage({ data, runAction, currentUser }) {
                               {!isEmployee && status === 'Pending' && (
                                 <button
                                   className="rounded bg-rose-600 px-2 py-1 text-[10px] font-bold text-white transition hover:bg-rose-700"
-                                  onClick={() => runAction(() => api.updateMaintenance(request.id, { status: 'Rejected' }))}
+                                  onClick={() => runAction(() => api.updateMaintenance(request.id, { organization: currentUser?.organization, status: 'Rejected' }))}
                                   type="button"
                                 >
                                   Reject
@@ -183,6 +184,7 @@ function MaintenancePage({ data, runAction, currentUser }) {
                                   onClick={() =>
                                     runAction(() =>
                                       api.updateMaintenance(request.id, {
+                                        organization: currentUser?.organization,
                                         status: nextStatus[status],
                                       })
                                     )

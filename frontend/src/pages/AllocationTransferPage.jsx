@@ -3,9 +3,9 @@ import Panel from '../components/Panel'
 import Pill from '../components/Pill'
 import { api } from '../services/api'
 
-function AllocationTransferPage({ data, runAction }) {
+function AllocationTransferPage({ data, runAction, currentUser }) {
   const assets = data.assets || []
-  const employees = data.organization?.employees || []
+  const employees = (data.organization?.employees || []).filter((employee) => employee.organization === currentUser?.organization)
   const [assetId, setAssetId] = useState('')
   const [employeeId, setEmployeeId] = useState('')
   const selectedAsset = assets.find((asset) => (asset.id || asset.tag) === assetId)
@@ -13,7 +13,7 @@ function AllocationTransferPage({ data, runAction }) {
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    runAction(() => api.allocateAsset(assetId, { holder: selectedEmployee.name, holderEmail: selectedEmployee.email }))
+    runAction(() => api.allocateAsset(assetId, { organization: currentUser?.organization, holder: selectedEmployee.name, holderEmail: selectedEmployee.email }))
   }
 
   return (

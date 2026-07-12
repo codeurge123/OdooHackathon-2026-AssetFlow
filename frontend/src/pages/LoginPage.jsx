@@ -131,7 +131,7 @@ function LoginPage({ onLogin, onCreateAccount, authError }) {
               </label>
               <label className="block text-left text-xs font-bold uppercase tracking-[0.08em] text-slate-800">
                 Email
-                <input className="mt-2 w-full border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#1454ad] focus:bg-white focus:ring-2 focus:ring-blue-100" placeholder={loginType === 'admin' ? 'admin@assetflow.com' : 'priya@assetflow.test'} type="email" value={form.email} onChange={(event) => updateForm('email', event.target.value)} />
+                <input className="mt-2 w-full border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#1454ad] focus:bg-white focus:ring-2 focus:ring-blue-100" placeholder={loginType === 'admin' ? 'admin@assetflow.com' : 'name@company.com'} type="email" value={form.email} onChange={(event) => updateForm('email', event.target.value)} />
               </label>
               <label className="block text-left text-xs font-bold uppercase tracking-[0.08em] text-slate-800">
                 Password
@@ -156,7 +156,7 @@ function LoginPage({ onLogin, onCreateAccount, authError }) {
                 {mode === 'login' ? 'Create Account' : 'Back to Login'}
               </button>
             </p>
-            <p className="mt-4 text-xs text-slate-500">Demo org: AssetFlow Demo Org. Admin: admin@assetflow.com / Admin@123. Employee: priya@assetflow.test / Employee@123.</p>
+            <p className="mt-4 text-xs text-slate-500">Default admin: admin@assetflow.com / Admin@123 for AssetFlow Demo Org.</p>
           </motion.form>
         </div>
       </motion.section>

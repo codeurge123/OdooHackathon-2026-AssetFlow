@@ -10,15 +10,16 @@ const cardMeta = [
   ['Upcoming Returns', 'upcomingReturns', FiClock, 'Next 48h'],
 ]
 
-const activities = [
-  ['Laptop AF-0114 allocated to Priya Shah', 'IT Department - Building B, Room 402', '14 mins ago', 'bg-blue-100 text-blue-700'],
-  ['Room B2 - booking confirmed - 2:00 to 3:00 PM', 'Marketing Team Sync - Internal Booking', '1 hour ago', 'bg-rose-100 text-rose-700'],
-  ['Projector AF-0062 - maintenance resolved', 'Bulb replaced and lens calibrated - Logistics Hub', '3 hours ago', 'bg-emerald-100 text-emerald-700'],
-  ['New Audit Cycle Started', 'FY24 Q3 Physical Inventory Audit - Managed by Audit Team', 'Yesterday', 'bg-amber-100 text-amber-700'],
-]
-
 function DashboardPage({ data, setActive }) {
   const dashboard = data.dashboard || { kpis: {}, overdueReturns: 0 }
+  const activities = [
+    ...(data.notifications || []).slice(0, 4).map((notification) => ({
+      title: notification.text,
+      subtitle: notification.type || 'Activity',
+      time: notification.age || 'Just now',
+      style: 'bg-blue-100 text-blue-700',
+    })),
+  ]
 
   return (
     <div className="space-y-6">
@@ -64,7 +65,7 @@ function DashboardPage({ data, setActive }) {
           <button className="text-sm font-bold text-slate-500 dark:text-slate-400" type="button">View History</button>
         </div>
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          {activities.map(([title, subtitle, time, style]) => (
+          {activities.map(({ title, subtitle, time, style }) => (
             <div className="grid gap-4 px-6 py-5 text-sm md:grid-cols-[auto_1fr_auto]" key={title}>
               <span className={`grid h-9 w-9 place-items-center rounded-lg ${style}`}>■</span>
               <div>
@@ -74,6 +75,11 @@ function DashboardPage({ data, setActive }) {
               <p className="font-semibold text-slate-500 dark:text-slate-400">{time}</p>
             </div>
           ))}
+          {!activities.length && (
+            <div className="px-6 py-10 text-center text-sm font-semibold text-slate-500 dark:text-slate-400">
+              No recent activity yet.
+            </div>
+          )}
         </div>
       </section>
     </div>

@@ -58,6 +58,7 @@ export const createEmployeeAccount = asyncHandler(async (req, res) => {
     await createRecord("notifications", null, {
       type: "Alerts",
       audience: "Admin",
+      organization,
       text: `${name} created an employee account for ${organization}`,
       age: "just now",
     });

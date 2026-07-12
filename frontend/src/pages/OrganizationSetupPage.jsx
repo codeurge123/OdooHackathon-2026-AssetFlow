@@ -24,7 +24,7 @@ const configs = {
   },
 }
 
-function OrganizationSetupPage({ data, runAction }) {
+function OrganizationSetupPage({ data, runAction, currentUser }) {
   const [tab, setTab] = useState('Departments')
   const [form, setForm] = useState({})
   const organization = data.organization || { departments: [], categories: [], employees: [] }
@@ -38,7 +38,7 @@ function OrganizationSetupPage({ data, runAction }) {
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    const payload = { ...form, status: 'Active', role: tab === 'Employees' ? 'Employee' : undefined }
+    const payload = { ...form, organization: currentUser?.organization, status: 'Active', role: tab === 'Employees' ? 'Employee' : undefined }
     runAction(async () => {
       await configs[tab].create(payload)
       setForm({})
